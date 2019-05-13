@@ -73,4 +73,9 @@ result.fval=fval;
 result.exitflag=exitflag;
 result.output=output;
 
+[s1,t1]=find(round(sol.x));
+
+[~,II]=sort(s1);
+result.allocations=t1(II);
+
 end

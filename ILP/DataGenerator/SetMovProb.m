@@ -1,10 +1,12 @@
-function probability = SetMovProb(NF,NA)
+function [probability,start_point] = SetMovProb(NF,NA)
 
 probability=zeros(NF,NA);
+start_point=zeros(NF,NA);
 
 for ii=1:NF
     [base,label]=SetBase(NA);
     probability(ii,base)=1;
+    start_point(ii,base)=1;
     if rand()>=0.5 % high moving desire
         if label==1
             probability(ii,base+1)=0.1*rand()+0.8;
