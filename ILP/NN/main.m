@@ -8,11 +8,11 @@ labfile='../DataStore/imgLabels.mat';
 load(imgfile);
 load(labfile);
 
-imgDataTrain=imgData(:,:,:,1:40000);
-imgLabelsTrain=imgLabels(1:40000,:);
+imgDataTrain=imgData(:,:,:,1:8000);
+imgLabelsTrain=imgLabels(1:8000,:);
 
-imgDataTest=imgData(:,:,:,40001:end);
-imgLabelsTest=imgLabels(40001:end,:);
+imgDataTest=imgData(:,:,:,8001:10000);
+imgLabelsTest=imgLabels(8001:10000,:);
 
 %% construct neural network  layers
 layers = [
@@ -34,11 +34,11 @@ layers = [
     batchNormalizationLayer
     reluLayer
 	
-    fullyConnectedLayer(6)
-    softmaxLayer
-    classificationLayer];
-%     fullyConnectedLayer(10)
-%     regressionLayer];
+%     fullyConnectedLayer(6)
+%     softmaxLayer
+%     classificationLayer];
+    fullyConnectedLayer(10)
+    regressionLayer];
 
 %% training neural network
 miniBatchSize = 1024;
@@ -46,31 +46,34 @@ options = trainingOptions( 'sgdm',...
     'ExecutionEnvironment','cpu',...
     'MiniBatchSize', miniBatchSize,...
     'MaxEpochs', 60, ...
-     'InitialLearnRate',0.001...
-     );
-%     'Plots', 'training-progress');
+     'InitialLearnRate',0.0001,...
+    'Plots', 'training-progress');
 
-net = cell(10,1);
-
-parfor ii=1:10
-    net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
-end
-% net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
+% net = cell(10,1);
+% 
+% parfor ii=1:10
+%     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
+% end
+net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
 
 %% test trained neural network
-predLabelsTestMedium = cell(10,1);
-parfor ii=1:10
-    predLabelsTestMedium{ii} = net{ii}.classify(imgDataTest);
-end
-predLabelsTest=[predLabelsTestMedium{1:10}];
-% predLabelsTest=net.predict(imgDataTest);
+% predLabelsTestMedium = cell(10,1);
+% for ii=1:10
+%     predLabelsTestMedium{ii} = net{ii}.classify(imgDataTest);
+% end
+% predLabelsTest=[predLabelsTestMedium{1:10}];
+predLabelsTest=net.predict(imgDataTest);
 
 counter=0;
 for jj=1:length(imgLabelsTest)
-    if all(predLabelsTest(jj,:)==categorical(imgLabelsTest(jj,:)))
-%     if all(round(predLabelsTest(jj,:))==imgLabelsTest(jj,:))
+%     if all(predLabelsTest(jj,:)==categorical(imgLabelsTest(jj,:)))
+    if all(round(predLabelsTest(jj,:))==imgLabelsTest(jj,:))
         counter=counter+1;
     end
 end
-accuracy = counter / length(imgLabelsTest);
+accuracy_final = counter / length(imgLabelsTest);
 
+% accuracy=zeros(1,10);
+% for ii=1:10
+%     accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / length(imgLabelsTest);
+% end
