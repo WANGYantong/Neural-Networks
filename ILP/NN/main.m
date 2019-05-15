@@ -8,11 +8,11 @@ labfile='../DataStore/imgLabels.mat';
 load(imgfile);
 load(labfile);
 
-imgDataTrain=imgData(:,:,:,1:8000);
-imgLabelsTrain=imgLabels(1:8000,:);
+imgDataTrain=imgData(:,:,:,1:40000);
+imgLabelsTrain=imgLabels(1:40000,:);
 
-imgDataTest=imgData(:,:,:,8001:end);
-imgLabelsTest=imgLabels(8001:end,:);
+imgDataTest=imgData(:,:,:,40001:end);
+imgLabelsTest=imgLabels(40001:end,:);
 
 %% construct neural network  layers
 layers = [
@@ -42,22 +42,24 @@ layers = [
 
 %% training neural network
 miniBatchSize = 1024;
-options = trainingOptions( 'sgdm',...    
+options = trainingOptions( 'sgdm',...  
+    'ExecutionEnvironment','cpu',...
     'MiniBatchSize', miniBatchSize,...
-    'MaxEpochs', 50, ...
-     'InitialLearnRate',0.001,...
-    'Plots', 'training-progress');
+    'MaxEpochs', 60, ...
+     'InitialLearnRate',0.001...
+     );
+%     'Plots', 'training-progress');
 
 net = cell(10,1);
 
-for ii=1:10
+parfor ii=1:10
     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
 
 %% test trained neural network
 predLabelsTestMedium = cell(10,1);
-for ii=1:10
+parfor ii=1:10
     predLabelsTestMedium{ii} = net{ii}.classify(imgDataTest);
 end
 predLabelsTest=[predLabelsTestMedium{1:10}];

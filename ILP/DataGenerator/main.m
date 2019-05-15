@@ -22,7 +22,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=10000;
+NUMINDEX=50000;
 
 imgData=zeros(2*NF+4, max([NF,NL,NA,NE]),1,NUMINDEX);
 imgLabels=zeros(NUMINDEX,NF);
