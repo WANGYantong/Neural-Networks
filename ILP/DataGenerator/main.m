@@ -22,43 +22,47 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=50000;
+NUMINDEX=10000;
 
-imgData=zeros(2*NF+4, max([NF,NL,NA,NE]),1,NUMINDEX);
+% imgData=zeros(2*NF+4, max([NF,NL,NA,NE]),1,NUMINDEX);
+imgData=zeros(16,11,1,NUMINDEX); % dense image size
 imgLabels=zeros(NUMINDEX,NF);
 
-for INDEX=1:NUMINDEX
+% # of hops from AR to EC
+hopcounter=zeros(length(AccessRouter),length(EdgeCloud));
+path=cell(length(AccessRouter),length(EdgeCloud));
+for ii=1:length(AccessRouter)
+    for jj=1:length(EdgeCloud)
+        [path{ii,jj},hopcounter(ii,jj)]=shortestpath(G,AccessRouter(ii),EdgeCloud(jj));
+    end
+end
+% # of hops from AR to DataCenter
+hoptotal=ones(size(flow))*15;
+% total space in EC
+spaceT=ones(size(EdgeCloud))*50;
+% total bandwidth in link
+bandwidthT=ones(size(G.Edges.Weight))*100;
+% relationship between node and link
+B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
+% surfficiently large number
+M=1000;
+
+save('../DataStore/network.mat','alpha','beta','hopcounter','hoptotal','B');
+
+for index=1:NUMINDEX
     
-    rng(INDEX);
+    rng(index);
     
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
-    % # of hops from AR to EC
-    hopcounter=zeros(length(AccessRouter),length(EdgeCloud));
-    path=cell(length(AccessRouter),length(EdgeCloud));
-    for ii=1:length(AccessRouter)
-        for jj=1:length(EdgeCloud)
-            [path{ii,jj},hopcounter(ii,jj)]=shortestpath(G,AccessRouter(ii),EdgeCloud(jj));
-        end
-    end
-    % # of hops from AR to DataCenter
-    hoptotal=ones(size(flow))*15;
     % space requirement of flow
     spaceK=randi(10,size(flow));
     % available space in EC
     spaceR=randi(40,size(EdgeCloud))+10;
-    % total space in EC
-    spaceT=ones(size(EdgeCloud))*50;
     % bandwidth requirement of flow
     bandwidthK=randi(10,size(flow));
     % available bandwidth in link
     bandwidthR=randi(50,size(G.Edges.Weight))+50;
-    % total bandwidth in link
-    bandwidthT=ones(size(G.Edges.Weight))*100;
-    % relationship between node and link
-    B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
-    % surfficiently large number
-    M=1000;
     
     %% packing parameters
     para.graph=G;
@@ -84,15 +88,15 @@ for INDEX=1:NUMINDEX
     data.M=M;
     
     %% Generating Training Data
-    imgData(:,:,:,INDEX)=DataGenerator(data,para);
+    imgData(:,:,:,index)=DataGenerator(data,para,3);
     
     %% ILP solver
-    result=ILP(para,data);
+%     result=ILP(para,data);
     
     %% Related Label
-    imgLabels(INDEX,:)=result.allocations;
+%     imgLabels(index,:)=result.allocations;
     
 end
 
 save('../DataStore/imgData.mat','imgData');
-save('../DataStore/imgLabels.mat','imgLabels');
+% save('../DataStore/imgLabels.mat','imgLabels');

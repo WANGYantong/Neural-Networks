@@ -8,15 +8,15 @@ labfile='../DataStore/imgLabels.mat';
 load(imgfile);
 load(labfile);
 
-imgDataTrain=imgData(:,:,:,1:9000);
-imgLabelsTrain=imgLabels(1:9000,:);
+imgDataTrain=imgData(:,:,:,1:8000);
+imgLabelsTrain=imgLabels(1:8000,:);
 
-imgDataTest=imgData(:,:,:,9001:10000);
-imgLabelsTest=imgLabels(9001:10000,:);
+imgDataTest=imgData(:,:,:,8001:10000);
+imgLabelsTest=imgLabels(8001:10000,:);
 
 %% construct neural network  layers
 layers = [
-    imageInputLayer([24 15 1])
+    imageInputLayer([16 11 1]) % sparse 24*15, dense 21*10
 	
     convolution2dLayer(3,16,'Padding',1)
     batchNormalizationLayer
@@ -42,26 +42,31 @@ layers = [
 
 %% training neural network
 miniBatchSize = 1024;
-options = trainingOptions( 'sgdm',...  
+options = trainingOptions( 'adam',...  
     'ExecutionEnvironment','auto',...
     'MiniBatchSize', miniBatchSize,...
-    'MaxEpochs', 60, ...
-     'InitialLearnRate',0.0001,...
-    'Plots', 'training-progress');
+    'MaxEpochs', 40, ...
+     'InitialLearnRate',0.001);%,...
+%     'Plots', 'training-progress');
 
 net = cell(10,1);
 
-for ii=1:10
+parfor ii=1:10
     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
 
 %% test trained neural network
 predLabelsTestMedium = cell(10,1);
+score = cell(10,1);
 for ii=1:10
-    predLabelsTestMedium{ii} = net{ii}.classify(imgDataTest);
+    [predLabelsTestMedium{ii}, score{ii}] = net{ii}.classify(imgDataTest);
 end
 predLabelsTest=[predLabelsTestMedium{1:10}];
+scoreTest=[score{1:10}];
+for ii=1:2000
+    predLabelsTest(ii,:)=combiner(predLabelsTest(ii,:), scoreTest(ii,:));
+end
 % predLabelsTest=net.predict(imgDataTest);
 
 counter=0;
