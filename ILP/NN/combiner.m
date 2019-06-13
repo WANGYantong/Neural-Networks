@@ -1,25 +1,132 @@
-function labelUpdate = combiner(labelOriginal,score)
+function labelUpdate = combiner(img,labelOriginal,score)
 
-if nargin < 2
+if nargin < 3
     opts=0; %  totally randomized
 else
     opts=1; % based on prediction score
 end
 
+Net=load('../DataStore/network.mat');
+Net.prob=(255-img(1:10,1:8))/255;
+Net.sk=(255-img(1:10,9))*10/255;
+Net.bk=(255-img(1:10,10))*10/255;
+Net.SR=img(11:16,9)*50/255;
+Net.BR=img(1:15,11)*100/255;
+
 NF=length(labelOriginal);
 NE=length(score)/NF;
 
-if opts
+switch opts
     
-    scoreRe=reshape(score,[NE,NF])';
-    
-    % get the nonzero prediction
-    % emumerate each prediction by 1-bit flip
-        % space check
-        % link check
-        % object compare
-    
+    case 0
+        
+        
+    case 1
+        scoreRe=reshape(score,[NE,NF])';
+        [row,col]=find(scoreRe>=0.001);
+        [row,ind]=sort(row);
+        col=categorical(col(ind));
+        
+        labelUpdate=labelOriginal;
+        for ii=1:length(row)  % considering modify depending on the value of score desendly
+            if labelUpdate(row(ii))~=col(ii)
+                labelUpdate(row(ii))=col(ii);
+                spaceFlagUpdate=space_check(labelUpdate,Net);
+                linkFlagUpdate=link_check(labelUpdate,Net);
+                spaceFlagOriginal=space_check(labelOriginal,Net);
+                linkFlagOriginal=link_check(labelOriginal,Net);
+                if spaceFlagUpdate && linkFlagUpdate   
+                    if ~spaceFlagOriginal || ~linkFlagOriginal
+                        labelOriginal=labelUpdate; % previous assignment is invalid and find a legal one
+                    else
+                        valueFlag=value_compare(labelUpdate,labelOriginal,Net);
+                        if valueFlag
+                            labelOriginal=labelUpdate; % previous is valid and find a better one
+                        else
+                            labelUpdate=labelOriginal;
+                        end
+                    end
+                else
+                    labelUpdate=labelOriginal;
+                end
+            end
+        end   
 end
 
 end
 
+function spaceFlag=space_check(label, Net)
+
+NF=length(label);
+flow_flag=zeros(size(label));
+
+for ii=1:NF
+    if(Net.sk(ii) < Net.SR(label(ii)))
+        Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
+        flow_flag(ii)=1;
+    end
+end
+
+spaceFlag=all(flow_flag);
+
+end
+
+function linkFlag=link_check(label, Net)
+
+NF=length(label);
+[NL,NA,NE]=size(Net.B);
+
+z=zeros(NF,NA,NE);
+for ii=1:NF
+    z(ii,Net.prob(ii,:)>0,label(ii))=1;
+end
+
+y=zeros(NF,NL);
+for ii=1:NF
+    for jj=1:NL
+        if(sum(Net.B(jj,:,:).*z(ii,:,:),'all')>0)
+            y(ii,jj)=1;
+        end
+    end
+end
+
+b_y=repmat(Net.bk,[1,NL]);
+linkFlag=all(sum(b_y.*y,1)<=Net.BR');
+
+end
+
+function valueFlag=value_compare(labelUpdate,labelOriginal,Net)
+
+NF=length(labelUpdate);
+[~,NA,NE]=size(Net.B);
+
+xUpdate=zeros(NF,NE);
+xOriginal=zeros(NF,NE);
+for ii=1:NF
+    xUpdate(ii,labelUpdate(ii))=1;
+    xOriginal(ii,labelOriginal(ii))=1;
+end
+
+zUpdate=zeros(NF,NA,NE);
+zOriginal=zeros(NF,NA,NE);
+for ii=1:NF
+    zUpdate(ii,Net.prob(ii,:)>0,labelUpdate(ii))=1;
+    zOriginal(ii,Net.prob(ii,:)>0,labelOriginal(ii))=1;
+end
+
+probability_z=repmat(Net.prob,[1,1,NE]);
+hopcounter_z=reshape(Net.hopcounter,1,NA*NE);
+hopcounter_z=repmat(hopcounter_z,[NF,1]);
+hopcounter_z=reshape(hopcounter_z,NF,NA,NE);
+
+costUpdate=Net.alpha*sum(xUpdate,'all')+...
+    Net.beta*sum(probability_z.*hopcounter_z.*zUpdate,'all')+...
+    Net.beta*sum((1-sum(sum(probability_z.*zUpdate,3),2)).*Net.hoptotal');
+
+costOriginal=Net.alpha*sum(xOriginal,'all')+...
+    Net.beta*sum(probability_z.*hopcounter_z.*zOriginal,'all')+...
+    Net.beta*sum((1-sum(sum(probability_z.*zOriginal,3),2)).*Net.hoptotal');
+
+valueFlag=costUpdate<costOriginal;
+
+end

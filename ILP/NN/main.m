@@ -11,8 +11,22 @@ load(labfile);
 imgDataTrain=imgData(:,:,:,1:8000);
 imgLabelsTrain=imgLabels(1:8000,:);
 
+%
+% imgLabelsTrain2=zeros(8000,5);
+% for ii=1:5
+%     resu=strcat(num2str(imgLabelsTrain(:,2*ii-1)),num2str(imgLabelsTrain(:,2*ii)));
+%     imgLabelsTrain2(:,ii)=str2num(resu);
+% end
+    
 imgDataTest=imgData(:,:,:,8001:10000);
 imgLabelsTest=imgLabels(8001:10000,:);
+
+%
+% imgLabelsTest2=zeros(2000,5);
+% for ii=1:5
+%     resu=strcat(num2str(imgLabelsTest(:,2*ii-1)),num2str(imgLabelsTest(:,2*ii)));
+%     imgLabelsTest2(:,ii)=str2num(resu);
+% end
 
 %% construct neural network  layers
 layers = [
@@ -64,8 +78,8 @@ for ii=1:10
 end
 predLabelsTest=[predLabelsTestMedium{1:10}];
 scoreTest=[score{1:10}];
-for ii=1:2000
-    predLabelsTest(ii,:)=combiner(predLabelsTest(ii,:), scoreTest(ii,:));
+parfor ii=1:2000
+    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii),predLabelsTest(ii,:), scoreTest(ii,:));
 end
 % predLabelsTest=net.predict(imgDataTest);
 
