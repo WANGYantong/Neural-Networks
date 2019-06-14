@@ -1,10 +1,10 @@
-function labelUpdate = combiner(img,labelOriginal,score)
+function labelUpdate = combiner(img,labelOriginal,score,opts)
 
-if nargin < 3
-    opts=0; %  totally randomized
-else
-    opts=1; % based on prediction score
-end
+% if nargin < 3
+%     opts=0; %  totally randomized
+% else
+%     opts=2; % based on prediction score
+% end
 
 Net=load('../DataStore/network.mat');
 Net.prob=(255-img(1:10,1:8))/255;
@@ -20,6 +20,31 @@ switch opts
     
     case 0
         
+        TIMES_HARDCODE=1000;
+        
+        labelUpdate=labelOriginal;
+        for ii=1:TIMES_HARDCODE
+            labelUpdate(randi(NF))=categorical(randi(NE));
+            spaceFlagUpdate=space_check(labelUpdate,Net);
+            linkFlagUpdate=link_check(labelUpdate,Net);
+            spaceFlagOriginal=space_check(labelOriginal,Net);
+            linkFlagOriginal=link_check(labelOriginal,Net);
+            if spaceFlagUpdate && linkFlagUpdate
+                if ~spaceFlagOriginal || ~linkFlagOriginal
+                    labelOriginal=labelUpdate; % previous assignment is invalid and find a legal one
+                else
+                    valueFlag=value_compare(labelUpdate,labelOriginal,Net);
+                    if valueFlag
+                        labelOriginal=labelUpdate; % previous is valid and find a better one
+                    else
+                        labelUpdate=labelOriginal;
+                    end
+                end
+            else
+                labelUpdate=labelOriginal;
+            end
+        end
+        
         
     case 1
         scoreRe=reshape(score,[NE,NF])';
@@ -29,6 +54,42 @@ switch opts
         
         labelUpdate=labelOriginal;
         for ii=1:length(row)  % considering modify depending on the value of score desendly
+            if labelUpdate(row(ii))~=col(ii)
+                labelUpdate(row(ii))=col(ii);
+                spaceFlagUpdate=space_check(labelUpdate,Net);
+                linkFlagUpdate=link_check(labelUpdate,Net);
+                spaceFlagOriginal=space_check(labelOriginal,Net);
+                linkFlagOriginal=link_check(labelOriginal,Net);
+                if spaceFlagUpdate && linkFlagUpdate   
+                    if ~spaceFlagOriginal || ~linkFlagOriginal
+                        labelOriginal=labelUpdate; % previous assignment is invalid and find a legal one
+                    else
+                        valueFlag=value_compare(labelUpdate,labelOriginal,Net);
+                        if valueFlag
+                            labelOriginal=labelUpdate; % previous is valid and find a better one
+                        else
+                            labelUpdate=labelOriginal;
+                        end
+                    end
+                else
+                    labelUpdate=labelOriginal;
+                end
+            end
+        end   
+        
+    case 2
+        scoreRe=reshape(score,[NE,NF])';
+        [row,col]=find(scoreRe>=0.001);
+        value=zeros(size(row));
+        for ii=1:length(row)
+            value(ii)=scoreRe(row(ii),col(ii));
+        end
+        [~,ind]=sort(value,'descend');
+        row=row(ind);
+        col=categorical(col(ind));
+        
+        labelUpdate=labelOriginal;
+        for ii=1:length(row)  
             if labelUpdate(row(ii))~=col(ii)
                 labelUpdate(row(ii))=col(ii);
                 spaceFlagUpdate=space_check(labelUpdate,Net);
