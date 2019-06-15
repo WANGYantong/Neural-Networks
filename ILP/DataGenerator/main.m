@@ -22,7 +22,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=10000;
+NUMINDEX=50000;
 
 % imgData=zeros(2*NF+4, max([NF,NL,NA,NE]),1,NUMINDEX);
 imgData=zeros(16,11,1,NUMINDEX); % dense image size
@@ -99,4 +99,4 @@ for index=1:NUMINDEX
 end
 
 save('../DataStore/imgData.mat','imgData');
-% save('../DataStore/imgLabels.mat','imgLabels');
+save('../DataStore/imgLabels.mat','imgLabels');
