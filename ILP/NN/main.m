@@ -60,12 +60,12 @@ options = trainingOptions( 'adam',...
     'ExecutionEnvironment','auto',...
     'MiniBatchSize', miniBatchSize,...
     'MaxEpochs', 40, ...
-     'InitialLearnRate',0.001,...
-    'Plots', 'training-progress');
+     'InitialLearnRate',0.001);%,...
+%     'Plots', 'training-progress');
 
 net = cell(10,1);
 
-for ii=1:10
+parfor ii=1:10
     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
@@ -78,8 +78,10 @@ for ii=1:10
 end
 predLabelsTest=[predLabelsTestMedium{1:10}];
 scoreTest=[score{1:10}];
-parfor ii=1:2000
-    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii),predLabelsTest(ii,:), scoreTest(ii,:),2);
+
+NUMTEST=size(imgLabelsTest,1);
+parfor ii=1:NUMTEST
+    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),2);
 end
 % predLabelsTest=net.predict(imgDataTest);
 
@@ -95,4 +97,17 @@ accuracy_final = counter / length(imgLabelsTest);
 accuracy=zeros(1,10);
 for ii=1:10
     accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / length(imgLabelsTest);
+end
+
+% counter__=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     counter__(ii)=sum(predLabelsTest(ii,:)==categorical(imgLabelsTest(ii,:)));
+% end
+% result=zeros(10,1);
+% for ii=10:-1:1
+%     result(11-ii)=sum(counter__==ii);
+% end
+value__=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));
 end

@@ -43,8 +43,7 @@ switch opts
             else
                 labelUpdate=labelOriginal;
             end
-        end
-        
+        end        
         
     case 1
         scoreRe=reshape(score,[NE,NF])';
@@ -79,7 +78,7 @@ switch opts
         
     case 2
         scoreRe=reshape(score,[NE,NF])';
-        [row,col]=find(scoreRe>=0.001);
+        [row,col]=find(scoreRe>=0.0001);
         value=zeros(size(row));
         for ii=1:length(row)
             value(ii)=scoreRe(row(ii),col(ii));
