@@ -13,19 +13,23 @@ end
 % ID of mobile users
 flow=1:10;
 % caching cost per EC
-alpha=1;
+alpha=0.8;
 % transmission cost per hop
-beta=0.25;
+beta=0.2;
 
 NF=length(flow);
 NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=50000;
+NUMINDEX=10000;
 
-% imgData=zeros(2*NF+4, max([NF,NL,NA,NE]),1,NUMINDEX);
-imgData=zeros(16,11,1,NUMINDEX); % dense image size
+IMAGE=0; % 0 for Constants+Variables
+                 % 1 for Variables; 2&3 for Centralized Variables;
+                 % 4 for Value normalization
+image_layout=ImageEncoding(N,NF,NE,NA,NL,IMAGE);
+save('../DataStore/layout.mat','image_layout');
+imgData=zeros([image_layout.size,1,NUMINDEX]); % dense image size
 imgLabels=zeros(NUMINDEX,NF);
 
 % # of hops from AR to EC
@@ -37,7 +41,7 @@ for ii=1:length(AccessRouter)
     end
 end
 % # of hops from AR to DataCenter
-hoptotal=ones(size(flow))*15;
+hoptotal=15;
 % total space in EC
 spaceT=ones(size(EdgeCloud))*50;
 % total bandwidth in link
@@ -88,7 +92,7 @@ for index=1:NUMINDEX
     data.M=M;
     
     %% Generating Training Data
-    imgData(:,:,:,index)=DataGenerator(data,para,3);
+    imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
     
     %% ILP solver
     result=ILP(para,data);

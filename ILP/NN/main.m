@@ -9,6 +9,7 @@ load(imgfile);
 load(labfile);
 
 imgDataTrain=imgData(:,:,:,1:8000);
+inputSize=size(imgDataTrain);
 imgLabelsTrain=imgLabels(1:8000,:);
 
 %
@@ -30,21 +31,21 @@ imgLabelsTest=imgLabels(8001:10000,:);
 
 %% construct neural network  layers
 layers = [
-    imageInputLayer([16 11 1]) % sparse 24*15, dense 21*10
+    imageInputLayer(inputSize(1:3)) 
 	
-    convolution2dLayer(3,16,'Padding',1)
+    convolution2dLayer(3,16,'Padding','same')
     batchNormalizationLayer
     reluLayer
 	
 %     maxPooling2dLayer(2,'Stride',2)
 	
-    convolution2dLayer(3,32,'Padding',1)
+    convolution2dLayer(3,32,'Padding','same')
     batchNormalizationLayer
     reluLayer
 	
 %     maxPooling2dLayer(2,'Stride',2)
 	
-    convolution2dLayer(3,64,'Padding',1)
+    convolution2dLayer(3,64,'Padding','same')
     batchNormalizationLayer
     reluLayer
     

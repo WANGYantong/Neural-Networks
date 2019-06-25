@@ -22,7 +22,7 @@ figure(1);
 
 G=graph(s,t,weight,vertice_name);
 
-G=addedge(G,EC4,EC5,1);
+% G=addedge(G,EC4,EC5,1);
 
 h=plot(G,'NodeLabel',G.Nodes.Name);
 

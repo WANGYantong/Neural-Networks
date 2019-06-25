@@ -1,6 +1,7 @@
 function cost = valueCalculator(img,label)
 
 Net=load('../DataStore/network.mat');
+layout=load('../DataStore/layout.mat');
 Net.prob=(255-img(1:10,1:8))/255;
 Net.sk=(255-img(1:10,9))*10/255;
 Net.bk=(255-img(1:10,10))*10/255;
@@ -24,7 +25,7 @@ hopcounter_z=reshape(hopcounter_z,NF,NA,NE);
 
 cost=Net.alpha*sum(x,'all')+...
     Net.beta*sum(probability_z.*hopcounter_z.*z,'all')+...
-    Net.beta*sum((1-sum(sum(probability_z.*z,3),2)).*Net.hoptotal');
+    Net.beta*sum((1-sum(sum(probability_z.*z,3),2))*Net.hoptotal);
 
 gamma=10;
 cost=cost+gamma*(space_penalty(label,Net)+link_penalty(label,Net));

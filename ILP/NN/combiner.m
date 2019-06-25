@@ -7,11 +7,12 @@ function labelUpdate = combiner(img,labelOriginal,score,opts)
 % end
 
 Net=load('../DataStore/network.mat');
-Net.prob=(255-img(1:10,1:8))/255;
-Net.sk=(255-img(1:10,9))*10/255;
-Net.bk=(255-img(1:10,10))*10/255;
-Net.SR=img(11:16,9)*50/255;
-Net.BR=img(1:15,11)*100/255;
+[prob,sk,bk,SR,BR]=imageDecoding(img);
+Net.prob=prob;
+Net.sk=sk;
+Net.bk=bk;
+Net.SR=SR;
+Net.BR=BR;
 
 NF=length(labelOriginal);
 NE=length(score)/NF;
@@ -151,7 +152,7 @@ for ii=1:NF
 end
 
 b_y=repmat(Net.bk,[1,NL]);
-linkFlag=all(sum(b_y.*y,1)<=Net.BR');
+linkFlag=all(sum(b_y.*y,1)<=Net.BR);
 
 end
 

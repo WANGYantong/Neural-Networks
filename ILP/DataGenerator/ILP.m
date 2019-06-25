@@ -40,7 +40,7 @@ hopcounter_z=repmat(hopcounter_z,[NF,1]);
 hopcounter_z=reshape(hopcounter_z,NF,NA,NE);
 objfun2=data.beta*sum(sum(sum(probability_z.*hopcounter_z.*z,3),2));
 
-objfun3=data.beta*sum((1-sum(sum(probability_z.*z,3),2)).*data.hoptotal');
+objfun3=data.beta*sum((1-sum(sum(probability_z.*z,3),2))*data.hoptotal);
 
 %% load optimization section
 ProCach=optimproblem;
