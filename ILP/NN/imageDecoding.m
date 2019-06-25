@@ -1,7 +1,11 @@
-function [outputArg1,outputArg2] = imageDecoding(inputArg1,inputArg2)
-%IMAGEDECODING Summary of this function goes here
-%   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+function [prob,sk,bk,SR,BR] = imageDecoding(img)
+
+layout=load('../DataStore/layout.mat');
+
+switch layout.opts
+    
+    case {0,1,2,3}
+        prob=img(255-img());
+
 end
 

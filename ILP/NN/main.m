@@ -56,7 +56,7 @@ layers = [
 %     regressionLayer];
 
 %% training neural network
-miniBatchSize = 1024;
+miniBatchSize = 256;
 options = trainingOptions( 'adam',...  
     'ExecutionEnvironment','auto',...
     'MiniBatchSize', miniBatchSize,...
@@ -70,7 +70,7 @@ parfor ii=1:10
     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
-
+save('net.mat','net');
 %% test trained neural network
 predLabelsTestMedium = cell(10,1);
 score = cell(10,1);

@@ -1,7 +1,6 @@
 function cost = valueCalculator(img,label)
 
 Net=load('../DataStore/network.mat');
-layout=load('../DataStore/layout.mat');
 Net.prob=(255-img(1:10,1:8))/255;
 Net.sk=(255-img(1:10,9))*10/255;
 Net.bk=(255-img(1:10,10))*10/255;
