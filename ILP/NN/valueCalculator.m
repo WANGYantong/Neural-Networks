@@ -1,11 +1,12 @@
 function cost = valueCalculator(img,label)
 
 Net=load('../DataStore/network.mat');
-Net.prob=(255-img(1:10,1:8))/255;
-Net.sk=(255-img(1:10,9))*10/255;
-Net.bk=(255-img(1:10,10))*10/255;
-Net.SR=img(11:16,9)*50/255;
-Net.BR=img(1:15,11)*100/255;
+[prob,sk,bk,SR,BR]=imageDecoding(img);
+Net.prob=prob;
+Net.sk=sk;
+Net.bk=bk;
+Net.SR=SR;
+Net.BR=BR;
 
 NF=length(label);
 [~,NA,NE]=size(Net.B);
@@ -34,16 +35,25 @@ end
 function spaceValue=space_penalty(label, Net)
 
 NF=length(label);
-flow_flag=ones(size(label));
 
-for ii=1:NF
-    if(Net.sk(ii) <= round(Net.SR(label(ii))))
-        Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
-        flow_flag(ii)=0;
+if any(Net.SR) || any(Net.BR)
+    flow_flag=zeros(size(label));
+    for ii=1:NF
+        if(Net.sk(ii) <= round(Net.SR(label(ii))))
+            Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
+            flow_flag(ii)=1;
+        end
     end
+else
+    NE=size(Net.hopcounter,2);
+    x=zeros(NF,NE);
+    for ii=1:NF
+        x(ii,label(ii))=1;
+    end
+    flow_flag=sum(Net.sk.*x,1)<=1;
 end
 
-spaceValue=sum(flow_flag*Net.sk);
+spaceValue=sum(1-flow_flag);
 
 end
 
@@ -66,13 +76,12 @@ for ii=1:NF
     end
 end
 
-b_y=repmat(Net.bk,[1,NL]);
-linkBuffer=sum(b_y.*y,1)-Net.BR';
-linkValue=0;
-for ii=1:length(linkBuffer)
-    if linkBuffer(ii)>0
-        linkValue=linkValue+linkBuffer(ii);
-    end
+if any(Net.SR) || any(Net.BR)
+    b_y=repmat(Net.bk,[1,NL]);
+else
+    b_y=Net.bk;
 end
+link_flag=sum(b_y.*y,1)<=Net.BR';
+linkValue=sum(1-link_flag);
 
 end

@@ -119,13 +119,22 @@ end
 function spaceFlag=space_check(label, Net)
 
 NF=length(label);
-flow_flag=zeros(size(label));
 
-for ii=1:NF
-    if(Net.sk(ii) < Net.SR(label(ii)))
-        Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
-        flow_flag(ii)=1;
+if any(Net.SR) || any(Net.BR)    
+    flow_flag=zeros(size(label));
+    for ii=1:NF
+        if(Net.sk(ii) < round(Net.SR(label(ii))))
+            Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
+            flow_flag(ii)=1;
+        end
     end
+else
+    NE=size(Net.hopcounter,2);
+    x=zeros(NF,NE);
+    for ii=1:NF
+        x(ii,label(ii))=1;
+    end
+    flow_flag=sum(Net.sk.*x,1)<=1;
 end
 
 spaceFlag=all(flow_flag);
@@ -151,8 +160,12 @@ for ii=1:NF
     end
 end
 
-b_y=repmat(Net.bk,[1,NL]);
-linkFlag=all(sum(b_y.*y,1)<=Net.BR);
+if any(Net.SR) || any(Net.BR)
+    b_y=repmat(Net.bk,[1,NL]);
+else
+    b_y=Net.bk;
+end
+linkFlag=all(sum(b_y.*y,1)<=Net.BR');
 
 end
 
@@ -182,11 +195,11 @@ hopcounter_z=reshape(hopcounter_z,NF,NA,NE);
 
 costUpdate=Net.alpha*sum(xUpdate,'all')+...
     Net.beta*sum(probability_z.*hopcounter_z.*zUpdate,'all')+...
-    Net.beta*sum((1-sum(sum(probability_z.*zUpdate,3),2)).*Net.hoptotal');
+    Net.beta*sum((1-sum(sum(probability_z.*zUpdate,3),2)).*Net.hoptotal);
 
 costOriginal=Net.alpha*sum(xOriginal,'all')+...
     Net.beta*sum(probability_z.*hopcounter_z.*zOriginal,'all')+...
-    Net.beta*sum((1-sum(sum(probability_z.*zOriginal,3),2)).*Net.hoptotal');
+    Net.beta*sum((1-sum(sum(probability_z.*zOriginal,3),2)).*Net.hoptotal);
 
 valueFlag=costUpdate<costOriginal;
 
