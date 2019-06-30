@@ -24,7 +24,7 @@ NL=length(G.Edges.EndNodes);
 
 NUMINDEX=10000;
 
-IMAGE=0; % 0 for Constants+Variables
+IMAGE=2; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
                  % 4 for Value normalization
 image_layout=ImageEncoding(N,NF,NE,NA,NL,IMAGE);
@@ -102,5 +102,5 @@ for index=1:NUMINDEX
     
 end
 
-save('../DataStore/imgData.mat','imgData');
-save('../DataStore/imgLabels.mat','imgLabels');
+save(['../DataStore/imgData_' num2str(IMAGE) '.mat'],'imgData');
+save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');

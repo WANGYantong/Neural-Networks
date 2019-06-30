@@ -3,8 +3,9 @@ clear
 clc
 
 %% load training/test data and label
-imgfile='../DataStore/imgData.mat';
-labfile='../DataStore/imgLabels.mat';
+layout=load('../DataStore/layout.mat');
+imgfile=['../DataStore/imgData_' num2str(layout.image_layout.opts) '.mat'];
+labfile=['../DataStore/imgLabels_' num2str(layout.image_layout.opts) '.mat'];
 load(imgfile);
 load(labfile);
 
@@ -18,7 +19,7 @@ imgLabelsTrain=imgLabels(1:8000,:);
 %     resu=strcat(num2str(imgLabelsTrain(:,2*ii-1)),num2str(imgLabelsTrain(:,2*ii)));
 %     imgLabelsTrain2(:,ii)=str2num(resu);
 % end
-    
+
 imgDataTest=imgData(:,:,:,8001:10000);
 imgLabelsTest=imgLabels(8001:10000,:);
 
@@ -70,7 +71,7 @@ parfor ii=1:10
     net{ii} = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
-save('net.mat','net');
+save(['net_' num2str(layout.image_layout.opts) '.mat'],'net');
 %% test trained neural network
 predLabelsTestMedium = cell(10,1);
 score = cell(10,1);
@@ -100,14 +101,15 @@ for ii=1:10
     accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / length(imgLabelsTest);
 end
 
-% counter__=zeros(NUMTEST,1);
-% for ii=1:NUMTEST
-%     counter__(ii)=sum(predLabelsTest(ii,:)==categorical(imgLabelsTest(ii,:)));
-% end
-% result=zeros(10,1);
-% for ii=10:-1:1
-%     result(11-ii)=sum(counter__==ii);
-% end
+counter__=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter__(ii)=sum(predLabelsTest(ii,:)==categorical(imgLabelsTest(ii,:)));
+end
+result=zeros(10,1);
+for ii=10:-1:1
+    result(11-ii)=sum(counter__==ii);
+end
+
 value__=zeros(NUMTEST,1);
 for ii=1:NUMTEST
     value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));

@@ -162,10 +162,12 @@ end
 
 if any(Net.SR) || any(Net.BR)
     b_y=repmat(Net.bk,[1,NL]);
+    linkFlag=all(sum(b_y.*y,1)<=Net.BR');
 else
     b_y=Net.bk;
+    linkFlag=all(sum(b_y.*y,1)<=1);
 end
-linkFlag=all(sum(b_y.*y,1)<=Net.BR');
+
 
 end
 

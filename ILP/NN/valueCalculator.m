@@ -35,22 +35,18 @@ end
 function spaceValue=space_penalty(label, Net)
 
 NF=length(label);
-
+NE=size(Net.hopcounter,2);
+x=zeros(NF,NE);
+for ii=1:NF
+    x(ii,label(ii))=1;
+end
+    
 if any(Net.SR) || any(Net.BR)
-    flow_flag=zeros(size(label));
-    for ii=1:NF
-        if(Net.sk(ii) <= round(Net.SR(label(ii))))
-            Net.SR(label(ii))=Net.SR(label(ii))-Net.sk(ii);
-            flow_flag(ii)=1;
-        end
-    end
+    s_x=repmat(Net.sk,[1,NE]);
+    flow_flag=sum(s_x.*x,1)<=Net.SR';
 else
-    NE=size(Net.hopcounter,2);
-    x=zeros(NF,NE);
-    for ii=1:NF
-        x(ii,label(ii))=1;
-    end
-    flow_flag=sum(Net.sk.*x,1)<=1;
+    s_x=Net.sk;
+    flow_flag=sum(s_x.*x,1)<=1;
 end
 
 spaceValue=sum(1-flow_flag);
@@ -78,10 +74,12 @@ end
 
 if any(Net.SR) || any(Net.BR)
     b_y=repmat(Net.bk,[1,NL]);
+    link_flag=sum(b_y.*y,1)<=Net.BR';
 else
     b_y=Net.bk;
+    link_flag=sum(b_y.*y,1)<=1;
 end
-link_flag=sum(b_y.*y,1)<=Net.BR';
+
 linkValue=sum(1-link_flag);
 
 end

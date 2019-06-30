@@ -59,28 +59,33 @@ switch IMAGE
         layout.space.x=1;
         layout.space.y=1:NE;
         if length(layout.space.y)<Col
-            layout.space.y=floor(Col/2)-floor(layout.space.y/2):floor(Col/2)-floor(layout.space.y/2)+NE;
+            start=floor(Col/2)-floor(length(layout.space.y)/2);
+            layout.space.y=start+1:start+NE;
         end
         layout.bw.x=layout.space.x(end)+1;
         layout.bw.y=1:NL;
         if length(layout.bw.y)<Col
-            layout.bw.y=floor(Col/2)-floor(layout.bw.y/2):floor(Col/2)-floor(layout.bw.y/2)+NL;
+            start=floor(Col/2)-floor(length(layout.bw.y)/2);
+            layout.bw.y=start+1:start+NL;
         end
         
         layout.prob.x=layout.bw.x(end)+1:layout.bw.x(end)+NA;
         layout.prob.y=1:NF;
         if length(layout.prob.y)<Col
-            layout.prob.y=floor(Col/2)-floor(layout.prob.y/2):floor(Col/2)-floor(layout.prob.y/2)+NF;
+            start=floor(Col/2)-floor(length(layout.prob.y)/2);
+            layout.prob.y=start+1:start+NF;
         end
         layout.sprq.x=layout.prob.x(end)+1;
         layout.sprq.y=1:NF;
         if length(layout.sprq.y)<Col
-            layout.sprq.y=floor(Col/2)-floor(layout.sprq.y/2):floor(Col/2)-floor(layout.sprq.y/2)+NF;
+            start=floor(Col/2)-floor(length(layout.sprq.y)/2);
+            layout.sprq.y=start+1:start+NF;
         end
         layout.bwrq.x=layout.sprq.x(end)+1;
         layout.bwrq.y=1:NF;
         if length(layout.bwrq.y)<Col
-            layout.bwrq.y=floor(Col/2)-floor(layout.bwrq.y/2):floor(Col/2)-floor(layout.bwrq.y/2)+NF;
+            start=floor(Col/2)-floor(length(layout.bwrq.y)/2);
+            layout.bwrq.y=start+1:start+NF;
         end
         
         if IMAGE == 3
