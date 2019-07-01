@@ -53,7 +53,7 @@ switch opts
         col=categorical(col(ind));
         
         labelUpdate=labelOriginal;
-        for ii=1:length(row)  % considering modify depending on the value of score desendly
+        for ii=1:length(row)  
             if labelUpdate(row(ii))~=col(ii)
                 labelUpdate(row(ii))=col(ii);
                 spaceFlagUpdate=space_check(labelUpdate,Net);

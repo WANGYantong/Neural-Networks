@@ -13,6 +13,8 @@ imgDataTrain=imgData(:,:,:,1:8000);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=imgLabels(1:8000,:);
 
+% imshow(imgDataTrain(:,:,:,1),[0,255],'initialMagnification','fit');
+
 %
 % imgLabelsTrain2=zeros(8000,5);
 % for ii=1:5
@@ -83,7 +85,7 @@ scoreTest=[score{1:10}];
 
 NUMTEST=size(imgLabelsTest,1);
 parfor ii=1:NUMTEST
-    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),2);
+    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),0);
 end
 % predLabelsTest=net.predict(imgDataTest);
 
@@ -106,9 +108,11 @@ for ii=1:NUMTEST
     counter__(ii)=sum(predLabelsTest(ii,:)==categorical(imgLabelsTest(ii,:)));
 end
 result=zeros(10,1);
-for ii=10:-1:1
-    result(11-ii)=sum(counter__==ii);
+for ii=1:11
+    result(ii)=sum(counter__==ii-1);
 end
+
+precision=[0:10]*result/20000;
 
 value__=zeros(NUMTEST,1);
 for ii=1:NUMTEST

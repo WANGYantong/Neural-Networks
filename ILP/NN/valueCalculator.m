@@ -44,12 +44,12 @@ end
 if any(Net.SR) || any(Net.BR)
     s_x=repmat(Net.sk,[1,NE]);
     flow_flag=sum(s_x.*x,1)<=Net.SR';
+    spaceValue=sum(sum(s_x.*(1-flow_flag),1)./Net.SR');
 else
     s_x=Net.sk;
     flow_flag=sum(s_x.*x,1)<=1;
+    spaceValue=sum(sum(s_x.*(1-flow_flag),1));
 end
-
-spaceValue=sum(1-flow_flag);
 
 end
 
@@ -75,11 +75,11 @@ end
 if any(Net.SR) || any(Net.BR)
     b_y=repmat(Net.bk,[1,NL]);
     link_flag=sum(b_y.*y,1)<=Net.BR';
+    linkValue=sum(sum(b_y.*(1-link_flag),1)./Net.BR');
 else
     b_y=Net.bk;
     link_flag=sum(b_y.*y,1)<=1;
+    linkValue=sum(sum(b_y.*(1-link_flag),1));
 end
-
-linkValue=sum(1-link_flag);
 
 end

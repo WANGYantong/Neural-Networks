@@ -24,7 +24,7 @@ NL=length(G.Edges.EndNodes);
 
 NUMINDEX=10000;
 
-IMAGE=2; % 0 for Constants+Variables
+IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
                  % 4 for Value normalization
 image_layout=ImageEncoding(N,NF,NE,NA,NL,IMAGE);
