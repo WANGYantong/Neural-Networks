@@ -51,7 +51,8 @@ B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
 % surfficiently large number
 M=1000;
 
-save('../DataStore/network.mat','alpha','beta','hopcounter','hoptotal','B');
+save('../DataStore/network.mat','alpha','beta','hopcounter','hoptotal','B','G',...
+    'EdgeCloud','AccessRouter');
 
 for index=1:NUMINDEX
     

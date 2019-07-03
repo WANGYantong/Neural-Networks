@@ -85,7 +85,7 @@ scoreTest=[score{1:10}];
 
 NUMTEST=size(imgLabelsTest,1);
 parfor ii=1:NUMTEST
-    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),0);
+    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
 end
 % predLabelsTest=net.predict(imgDataTest);
 
@@ -117,4 +117,34 @@ precision=[0:10]*result/20000;
 value__=zeros(NUMTEST,1);
 for ii=1:NUMTEST
     value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));
+end
+
+%% test randomized as comparison
+solution=zeros(size(imgLabelsTest));
+parfor ii=1:NUMTEST
+    solution(ii,:)=Randomized(imgDataTest(:,:,:,ii));
+end
+
+counter=0;
+for jj=1:length(imgLabelsTest)
+    if all(solution(jj,:)==imgLabelsTest(jj,:))
+        counter=counter+1;
+    end
+end
+accuracy_Random = counter / length(imgLabelsTest);
+
+counter__=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter__(ii)=sum(solution(ii,:)==imgLabelsTest(ii,:));
+end
+result_Random=zeros(10,1);
+for ii=1:11
+    result_Random(ii)=sum(counter__==ii-1);
+end
+
+precision_Random=[0:10]*result_Random/20000;
+
+value_Random=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    value_Random(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution(ii,:));
 end
