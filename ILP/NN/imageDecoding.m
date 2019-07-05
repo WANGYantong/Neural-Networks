@@ -22,6 +22,9 @@ switch layout.image_layout.opts
         prob=(255-img(layout.image_layout.prob.x,layout.image_layout.prob.y))/255;
         sk=(255-img(layout.image_layout.space.x,layout.image_layout.space.y))/255;
         bk=(255-img(layout.image_layout.bandwidth.x,layout.image_layout.bandwidth.y))/255;
+%         prob=img(layout.image_layout.prob.x,layout.image_layout.prob.y);
+%         sk=img(layout.image_layout.space.x,layout.image_layout.space.y)/10;
+%         bk=img(layout.image_layout.bandwidth.x,layout.image_layout.bandwidth.y)/20;
         
         % indicator to represent value normalization case
         SR=0;

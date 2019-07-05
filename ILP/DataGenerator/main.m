@@ -96,12 +96,12 @@ for index=1:NUMINDEX
     imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
     
     %% ILP solver
-    result=ILP(para,data);
+%     result=ILP(para,data);
     
     %% Related Label
-    imgLabels(index,:)=result.allocations;
+%     imgLabels(index,:)=result.allocations;
     
 end
 
 save(['../DataStore/imgData_' num2str(IMAGE) '.mat'],'imgData');
-save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
+% save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');

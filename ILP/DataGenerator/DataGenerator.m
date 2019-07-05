@@ -67,13 +67,18 @@ switch layout.opts
         
         % moving probability: deep color represents high probability
         matrix(layout.prob.x,layout.prob.y)=255-data.probability/1*255;
+%         matrix(layout.prob.x,layout.prob.y)=data.probability;
+        
         % space utilization: deep color indicates high utilization
         normal=transpose(transpose(1./data.spaceR)*data.spaceK);
         matrix(layout.space.x,layout.space.y)=255-normal/1*255;
+%         matrix(layout.space.x,layout.space.y)=normal;
+        
         % bandwidth utilization
         normal=transpose(1./data.bandwidthR*data.bandwidthK);
         matrix(layout.bandwidth.x,layout.bandwidth.y)=255-normal/1*255;
-        
+%         matrix(layout.bandwidth.x,layout.bandwidth.y)=normal;
+              
 
     otherwise
         error('invalid argument layout.opts')

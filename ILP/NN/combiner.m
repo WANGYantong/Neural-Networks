@@ -89,7 +89,7 @@ switch opts
         col=categorical(col(ind));
         
         labelUpdate=labelOriginal;
-        for ii=1:length(row)  
+        for ii=NF+1:length(row)  
             if labelUpdate(row(ii))~=col(ii)
                 labelUpdate(row(ii))=col(ii);
                 spaceFlagUpdate=space_check(labelUpdate,Net);

@@ -2,6 +2,7 @@
 clear
 clc
 
+addpath(genpath(pwd));
 %% load training/test data and label
 layout=load('../DataStore/layout.mat');
 imgfile=['../DataStore/imgData_' num2str(layout.image_layout.opts) '.mat'];
@@ -85,7 +86,8 @@ scoreTest=[score{1:10}];
 
 NUMTEST=size(imgLabelsTest,1);
 parfor ii=1:NUMTEST
-    predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
+%     predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
+    predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
 end
 % predLabelsTest=net.predict(imgDataTest);
 
@@ -120,31 +122,31 @@ for ii=1:NUMTEST
 end
 
 %% test randomized as comparison
-solution=zeros(size(imgLabelsTest));
-parfor ii=1:NUMTEST
-    solution(ii,:)=Randomized(imgDataTest(:,:,:,ii));
-end
-
-counter=0;
-for jj=1:length(imgLabelsTest)
-    if all(solution(jj,:)==imgLabelsTest(jj,:))
-        counter=counter+1;
-    end
-end
-accuracy_Random = counter / length(imgLabelsTest);
-
-counter__=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    counter__(ii)=sum(solution(ii,:)==imgLabelsTest(ii,:));
-end
-result_Random=zeros(10,1);
-for ii=1:11
-    result_Random(ii)=sum(counter__==ii-1);
-end
-
-precision_Random=[0:10]*result_Random/20000;
-
-value_Random=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    value_Random(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution(ii,:));
-end
+% solution=zeros(size(imgLabelsTest));
+% parfor ii=1:NUMTEST
+%     solution(ii,:)=Randomized(imgDataTest(:,:,:,ii));
+% end
+% 
+% counter=0;
+% for jj=1:length(imgLabelsTest)
+%     if all(solution(jj,:)==imgLabelsTest(jj,:))
+%         counter=counter+1;
+%     end
+% end
+% accuracy_Random = counter / length(imgLabelsTest);
+% 
+% counter__=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     counter__(ii)=sum(solution(ii,:)==imgLabelsTest(ii,:));
+% end
+% result_Random=zeros(10,1);
+% for ii=1:11
+%     result_Random(ii)=sum(counter__==ii-1);
+% end
+% 
+% precision_Random=[0:10]*result_Random/20000;
+% 
+% value_Random=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     value_Random(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution(ii,:));
+% end
