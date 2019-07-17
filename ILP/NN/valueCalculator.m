@@ -30,6 +30,10 @@ cost=Net.alpha*sum(x,'all')+...
 gamma=20;
 cost=cost+gamma*(space_penalty(label,Net)+link_penalty(label,Net));
 
+if (space_penalty(label,Net))>0
+    disp('***');
+end
+
 end
 
 function spaceValue=space_penalty(label, Net)

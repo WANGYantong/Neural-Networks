@@ -96,7 +96,7 @@ for index=1:NUMINDEX
     imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
     
     %% ILP solver
-%     result=ILP(para,data);
+    result=ILP(para,data);
     
     %% Related Label
 %     imgLabels(index,:)=result.allocations;

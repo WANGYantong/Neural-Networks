@@ -78,6 +78,7 @@ save(['net_' num2str(layout.image_layout.opts) '.mat'],'net');
 %% test trained neural network
 predLabelsTestMedium = cell(10,1);
 score = cell(10,1);
+% tic;
 for ii=1:10
     [predLabelsTestMedium{ii}, score{ii}] = net{ii}.classify(imgDataTest);
 end
@@ -90,6 +91,7 @@ parfor ii=1:NUMTEST
     predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
 end
 % predLabelsTest=net.predict(imgDataTest);
+% running_time=toc;
 
 counter=0;
 for jj=1:length(imgLabelsTest)
