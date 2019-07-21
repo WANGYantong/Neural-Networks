@@ -54,6 +54,7 @@ M=1000;
 save('../DataStore/network.mat','alpha','beta','hopcounter','hoptotal','B','G',...
     'EdgeCloud','AccessRouter');
 
+result=cell(NUMINDEX,1);
 for index=1:NUMINDEX
     
     rng(index);
@@ -96,12 +97,13 @@ for index=1:NUMINDEX
     imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
     
     %% ILP solver
-    result=ILP(para,data);
+    result{ii}=ILP(para,data);
     
     %% Related Label
-%     imgLabels(index,:)=result.allocations;
+    imgLabels(index,:)=result{ii}.allocations;
     
 end
 
 save(['../DataStore/imgData_' num2str(IMAGE) '.mat'],'imgData');
-% save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
+save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
+save('../DataStore/solutions.mat','result');

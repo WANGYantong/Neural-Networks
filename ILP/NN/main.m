@@ -123,6 +123,11 @@ for ii=1:NUMTEST
     value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));
 end
 
+value=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    value(ii)=valueCalculator(imgDataTest(:,:,:,ii),imgLabelsTest(ii,:));
+end
+
 %% test randomized as comparison
 solution=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
