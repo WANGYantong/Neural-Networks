@@ -13,11 +13,13 @@ end
 row=row(ind);
 col=categorical(col(ind));
 
+opt.mode=0;
+
 labelUpdate=labelOriginal;
 for ii=NF+1:length(row)
     labelUpdate(row(ii))=col(ii);
-    valueUpdate=valueCalculator(img,labelUpdate);
-    valueOriginal=valueCalculator(img,labelOriginal);
+    valueUpdate=valueCalculator(img,labelUpdate,opt);
+    valueOriginal=valueCalculator(img,labelOriginal,opt);
     if valueUpdate<valueOriginal
         labelOriginal=labelUpdate;
     else
