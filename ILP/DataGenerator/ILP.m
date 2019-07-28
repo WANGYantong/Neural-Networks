@@ -11,7 +11,7 @@ y=optimvar('y',NF,NL,'Type','integer','LowerBound',0,'UpperBound',1);
 z=optimvar('z',NF,NA,NE,'Type','integer','LowerBound',0,'UpperBound',1);
 
 %% constraints
-cache_num_constraint=sum(x,2)<=1;   
+cache_num_constraint=sum(x,2)==1;   
 
 space_size_constraint=data.spaceK*x<=data.spaceR;
 
