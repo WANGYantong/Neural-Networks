@@ -3,7 +3,9 @@ function cost = valueCalculator(img,label,opt)
 % opt.mode=0: generate y&z depend on x
 % opt.mode=1: read y&z from external file
 
-Net=load('../DataStore/network.mat');
+global flow;
+
+Net=load(['../DataStore/',num2str(flow(end)),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;

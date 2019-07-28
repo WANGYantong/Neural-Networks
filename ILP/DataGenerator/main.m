@@ -11,7 +11,8 @@ end
 
 %% setting parameter
 % ID of mobile users
-flow=1:10;
+global flow;
+flow=1:20;
 % caching cost per EC
 alpha=0.8;
 % transmission cost per hop
@@ -28,7 +29,7 @@ IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
                  % 4 for Value normalization
 image_layout=ImageEncoding(N,NF,NE,NA,NL,IMAGE);
-save('../DataStore/layout.mat','image_layout');
+save(['../DataStore/flow',num2str(flow(end)),'/layout.mat'],'image_layout');
 imgData=zeros([image_layout.size,1,NUMINDEX]); % dense image size
 imgLabels=zeros(NUMINDEX,NF);
 
@@ -51,7 +52,7 @@ B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
 % surfficiently large number
 M=1000;
 
-save('../DataStore/network.mat','alpha','beta','hopcounter','hoptotal','B','G',...
+save(['../DataStore/flow',num2str(flow(end)),'/network.mat'],'alpha','beta','hopcounter','hoptotal','B','G',...
     'EdgeCloud','AccessRouter');
 
 result=cell(NUMINDEX,1);
@@ -62,11 +63,11 @@ for index=1:NUMINDEX
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
     % space requirement of flow
-    spaceK=randi(10,size(flow));
+    spaceK=randi(40,size(flow))+10;
     % available space in EC
-    spaceR=randi(40,size(EdgeCloud))+10;
+    spaceR=[randi(200,size(EdgeCloud(1:3)))+300,randi(200,size(EdgeCloud(4:end)))+100];
     % bandwidth requirement of flow
-    bandwidthK=randi(10,size(flow));
+    bandwidthK=randi(9,size(flow))+1;
     % available bandwidth in link
     bandwidthR=randi(50,size(G.Edges.Weight))+50;
     
@@ -104,6 +105,6 @@ for index=1:NUMINDEX
     
 end
 
-save(['../DataStore/imgData_' num2str(IMAGE) '.mat'],'imgData');
-save(['../DataStore/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
-save('../DataStore/solutions.mat','result');
+save(['../DataStore/flow',num2str(flow(end)),'/imgData_' num2str(IMAGE) '.mat'],'imgData');
+save(['../DataStore/flow',num2str(flow(end)),'/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
+save(['../DataStore/flow',num2str(flow(end)),'/solutions.mat'],'result');

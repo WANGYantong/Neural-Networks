@@ -4,9 +4,11 @@ clc
 
 addpath(genpath(pwd));
 %% load training/test data and label
-layout=load('../DataStore/layout.mat');
-imgfile=['../DataStore/imgData_' num2str(layout.image_layout.opts) '.mat'];
-labfile=['../DataStore/imgLabels_' num2str(layout.image_layout.opts) '.mat'];
+global flow;
+
+layout=load(['../DataStore/flow',num2str(flow(end)),'/layout.mat']);
+imgfile=['../DataStore/flow',num2str(flow(end)),'/imgData_',num2str(layout.image_layout.opts),'.mat'];
+labfile=['../DataStore/flow',num2str(flow(end)),'/imgLabels_',num2str(layout.image_layout.opts),'.mat'];
 load(imgfile);
 load(labfile);
 
@@ -128,7 +130,7 @@ end
 value=zeros(NUMTEST,1);
 opt.mode=1;
 offload=inputSize(end);
-sol=load('../DataStore/solutions.mat');
+sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
 for ii=1:NUMTEST
     opt.y=sol.result{ii+offload}.sol.y;
     opt.z=sol.result{ii+offload}.sol.z;
