@@ -1,6 +1,8 @@
 function [prob,sk,bk,SR,BR] = imageDecoding(img)
 
-layout=load('../DataStore/layout.mat');
+NF=size(img,1);
+
+layout=load(['../DataStore/flow',num2str(NF),'/layout.mat']);
 
 switch layout.image_layout.opts
     

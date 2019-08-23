@@ -12,7 +12,7 @@ end
 %% setting parameter
 % ID of mobile users
 global flow;
-flow=1:20;
+flow=1:10;
 % caching cost per EC
 alpha=0.8;
 % transmission cost per hop
@@ -23,7 +23,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=10000;
+NUMINDEX=5000;
 
 IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
@@ -44,7 +44,7 @@ end
 % # of hops from AR to DataCenter
 hoptotal=15;
 % total space in EC
-spaceT=ones(size(EdgeCloud))*50;
+spaceT=ones(size(EdgeCloud))*500;
 % total bandwidth in link
 bandwidthT=ones(size(G.Edges.Weight))*100;
 % relationship between node and link
@@ -63,11 +63,11 @@ for index=1:NUMINDEX
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
     % space requirement of flow
-    spaceK=randi(40,size(flow))+10;
+    spaceK=randi(50,size(flow))+50;
     % available space in EC
-    spaceR=[randi(200,size(EdgeCloud(1:3)))+300,randi(200,size(EdgeCloud(4:end)))+100];
+    spaceR=[randi(300,size(EdgeCloud(1:3)))+200,randi(200,size(EdgeCloud(4:end)))+100];
     % bandwidth requirement of flow
-    bandwidthK=randi(9,size(flow))+1;
+    bandwidthK=randi(10,size(flow))+10;
     % available bandwidth in link
     bandwidthR=randi(50,size(G.Edges.Weight))+50;
     

@@ -73,11 +73,11 @@ end
 
 figure;
 hold on;
-plot([1:20],trainAccu(1,:));
-plot([1:20],trainAccu(2,:));
-plot([1:20],trainAccu(3,:));
-plot([1:20],trainAccu(4,:));
-plot([1:20],trainAccu(5,:));
+plot((1:20),trainAccu(1,:));
+plot((1:20),trainAccu(2,:));
+plot((1:20),trainAccu(3,:));
+plot((1:20),trainAccu(4,:));
+plot((1:20),trainAccu(5,:));
 hold off;
 
 %% testing
@@ -118,7 +118,7 @@ for ii=1:NB
         result(jj)=sum(counter__==jj-1);
     end
     
-    precision(ii)=[0:10]*result/20000;
+    precision(ii)=(0:10)*result/20000;
     
     value__=zeros(NUMTEST,1);
     opt.mode=0;

@@ -1,6 +1,8 @@
 function solution = Randomized(img)
 
-Net=load('../DataStore/network.mat');
+NF=size(img,1);
+
+Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;
@@ -8,14 +10,13 @@ Net.bk=bk;
 Net.SR=SR;
 Net.BR=BR;
 
-NF=length(sk);
 NE=length(Net.EdgeCloud);
 
 % implement the basic allocation (based on nearest
 % EC from maximum moving probability)
 original=FindEcForFlow(Net);
 
-TIMES_HARDCODE=2000;
+TIMES_HARDCODE=1000;
 update=original;
 
 opt.mode=0;

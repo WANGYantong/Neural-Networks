@@ -3,9 +3,9 @@ function cost = valueCalculator(img,label,opt)
 % opt.mode=0: generate y&z depend on x
 % opt.mode=1: read y&z from external file
 
-global flow;
+NF=length(label);
 
-Net=load(['../DataStore/',num2str(flow(end)),'/network.mat']);
+Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;
@@ -13,7 +13,6 @@ Net.bk=bk;
 Net.SR=SR;
 Net.BR=BR;
 
-NF=length(label);
 [~,NA,NE]=size(Net.B);
 
 x=zeros(NF,NE);
@@ -43,10 +42,12 @@ cost=Net.alpha*sum(x,'all')+...
 
 gamma=20;
 cost=cost+gamma*(space_penalty(label,Net)+link_penalty(label,Net,opt));
+% cost=cost+gamma*(space_penalty(label,Net));
 
-if (space_penalty(label,Net)+link_penalty(label,Net,opt))>0
-    disp('infeasible');
-end
+% if (space_penalty(label,Net)+link_penalty(label,Net,opt))>0
+% if space_penalty(label,Net)>0
+%     disp('infeasible');
+% end
 
 end
 

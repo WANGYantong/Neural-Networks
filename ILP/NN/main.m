@@ -3,18 +3,24 @@ clear
 clc
 
 addpath(genpath(pwd));
+
+GREEDY=1;
+RANDOM=0;
+TR_Ratio=0.8;
 %% load training/test data and label
 global flow;
+NF=length(flow);
 
-layout=load(['../DataStore/flow',num2str(flow(end)),'/layout.mat']);
-imgfile=['../DataStore/flow',num2str(flow(end)),'/imgData_',num2str(layout.image_layout.opts),'.mat'];
-labfile=['../DataStore/flow',num2str(flow(end)),'/imgLabels_',num2str(layout.image_layout.opts),'.mat'];
+layout=load(['../DataStore/flow',num2str(NF),'/layout.mat']);
+imgfile=['../DataStore/flow',num2str(NF),'/imgData_',num2str(layout.image_layout.opts),'.mat'];
+labfile=['../DataStore/flow',num2str(NF),'/imgLabels_',num2str(layout.image_layout.opts),'.mat'];
 load(imgfile);
 load(labfile);
 
-imgDataTrain=imgData(:,:,:,1:8000);
+TOTAL=length(imgLabels);
+imgDataTrain=imgData(:,:,:,1:(TR_Ratio*TOTAL));
 inputSize=size(imgDataTrain);
-imgLabelsTrain=imgLabels(1:8000,:);
+imgLabelsTrain=imgLabels(1:(TR_Ratio*TOTAL),:);
 
 % imshow(imgDataTrain(:,:,:,1),[0,255],'Border','tight','initialMagnification','fit');
 
@@ -25,8 +31,8 @@ imgLabelsTrain=imgLabels(1:8000,:);
 %     imgLabelsTrain2(:,ii)=str2num(resu);
 % end
 
-imgDataTest=imgData(:,:,:,8001:10000);
-imgLabelsTest=imgLabels(8001:10000,:);
+imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
+imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);
 
 %
 % imgLabelsTest2=zeros(2000,5);
@@ -55,7 +61,11 @@ layers = [
     batchNormalizationLayer
     reluLayer
     
-    fullyConnectedLayer(6)
+%     convolution2dLayer(3,128,'Padding','same')
+%     batchNormalizationLayer
+%     reluLayer
+    
+    fullyConnectedLayer(7)
     softmaxLayer
     classificationLayer];
 %     fullyConnectedLayer(10)
@@ -70,23 +80,23 @@ options = trainingOptions( 'adam',...
      'InitialLearnRate',0.001);%,...
 %     'Plots', 'training-progress');
 
-net = cell(10,1);
-trainInfo = cell(10,1);
+net = cell(NF,1);
+trainInfo = cell(NF,1);
 
-parfor ii=1:10
+parfor ii=1:NF
     [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
 end
 % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
-save(['net_' num2str(layout.image_layout.opts) '.mat'],'net');
+save(['net_',num2str(layout.image_layout.opts),'_flow',num2str(NF), '.mat'],'net');
 %% test trained neural network
-predLabelsTestMedium = cell(10,1);
-score = cell(10,1);
+predLabelsTestMedium = cell(NF,1);
+score = cell(NF,1);
 % tic;
-for ii=1:10
+for ii=1:NF
     [predLabelsTestMedium{ii}, score{ii}] = net{ii}.classify(imgDataTest);
 end
-predLabelsTest=[predLabelsTestMedium{1:10}];
-scoreTest=[score{1:10}];
+predLabelsTest=[predLabelsTestMedium{1:NF}];
+scoreTest=[score{1:NF}];
 
 NUMTEST=size(imgLabelsTest,1);
 parfor ii=1:NUMTEST
@@ -105,8 +115,8 @@ for jj=1:length(imgLabelsTest)
 end
 accuracy_final = counter / length(imgLabelsTest);
 
-accuracy=zeros(1,10);
-for ii=1:10
+accuracy=zeros(1,NF);
+for ii=1:NF
     accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / length(imgLabelsTest);
 end
 
@@ -114,12 +124,12 @@ counter__=zeros(NUMTEST,1);
 for ii=1:NUMTEST
     counter__(ii)=sum(predLabelsTest(ii,:)==categorical(imgLabelsTest(ii,:)));
 end
-result=zeros(10,1);
-for ii=1:11
+result=zeros(NF,1);
+for ii=1:(NF+1)
     result(ii)=sum(counter__==ii-1);
 end
 
-precision=[0:10]*result/20000;
+precision=(0:NF)*result/(NF*NUMTEST);
 
 value__=zeros(NUMTEST,1);
 opt.mode=0;
@@ -138,10 +148,14 @@ for ii=1:NUMTEST
 end
 
 %% Greedy
+if GREEDY
+
+% tic;
 solution_G=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
     solution_G(ii,:)=Greedy(imgDataTest(:,:,:,ii));
 end
+% Time_G=toc;
 
 counter=0;
 for jj=1:length(imgLabelsTest)
@@ -155,12 +169,12 @@ counter_Greedy=zeros(NUMTEST,1);
 for ii=1:NUMTEST
     counter_Greedy(ii)=sum(solution_G(ii,:)==imgLabelsTest(ii,:));
 end
-result_Greedy=zeros(10,1);
-for ii=1:11
+result_Greedy=zeros(NF,1);
+for ii=1:(NF+1)
     result_Greedy(ii)=sum(counter_Greedy==ii-1);
 end
 
-precision_Greedy=[0:10]*result_Greedy/20000;
+precision_Greedy=(0:NF)*result_Greedy/(NF*NUMTEST);
 
 value_Greedy=zeros(NUMTEST,1);
 opt.mode=0;
@@ -168,11 +182,17 @@ for ii=1:NUMTEST
     value_Greedy(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_G(ii,:),opt);
 end
 
+end
+
 %% test randomized as comparison
+if RANDOM
+
+% tic;
 solution_R=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
     solution_R(ii,:)=Randomized(imgDataTest(:,:,:,ii));
 end
+% Time_R=toc;
 
 counter=0;
 for jj=1:length(imgLabelsTest)
@@ -186,12 +206,12 @@ counter_Random=zeros(NUMTEST,1);
 for ii=1:NUMTEST
     counter_Random(ii)=sum(solution_R(ii,:)==imgLabelsTest(ii,:));
 end
-result_Random=zeros(10,1);
-for ii=1:11
+result_Random=zeros(NF,1);
+for ii=1:(NF+1)
     result_Random(ii)=sum(counter_Random==ii-1);
 end
 
-precision_Random=[0:10]*result_Random/20000;
+precision_Random=(0:NF)*result_Random/(NF*NUMTEST);
 
 value_Random=zeros(NUMTEST,1);
 opt.mode=0;
@@ -199,4 +219,7 @@ for ii=1:NUMTEST
     value_Random(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_R(ii,:),opt);
 end
 
-save('July23.mat');
+end
+
+filenm=[datestr(now,'dd_mm_yyyy_HH_MM'),'_flow',num2str(NF)];
+save([filenm,'.mat']);

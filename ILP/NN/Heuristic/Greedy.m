@@ -1,6 +1,8 @@
 function solution = Greedy(img)
 
-Net=load('../DataStore/network.mat');
+NF=size(img,1);
+
+Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;

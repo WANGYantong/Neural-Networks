@@ -16,8 +16,11 @@ col=categorical(col(ind));
 opt.mode=0;
 
 labelUpdate=labelOriginal;
-for ii=NF+1:length(row)
+for ii=1:length(row)
     labelUpdate(row(ii))=col(ii);
+    if labelUpdate==labelOriginal
+        continue;
+    end
     valueUpdate=valueCalculator(img,labelUpdate,opt);
     valueOriginal=valueCalculator(img,labelOriginal,opt);
     if valueUpdate<valueOriginal
