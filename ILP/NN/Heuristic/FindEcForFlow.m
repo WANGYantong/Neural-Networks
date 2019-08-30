@@ -1,11 +1,9 @@
-function initial_point = FindEcForFlow(Net)
+function list_ec = FindEcForFlow(Net)
 
 [~,I]=sort(Net.prob,2,'descend');
 ar = Net.AccessRouter(I(:,1));
 
 list_ec=Construct_EC_List(Net,ar);
-
-initial_point=list_ec(:,1);
 
 end
 

@@ -14,9 +14,11 @@ end
 global flow;
 flow=1:10;
 % caching cost per EC
-alpha=0.8;
+alpha=0.5;
 % transmission cost per hop
-beta=0.2;
+beta=1;
+% cache miss penalty
+gamma=1;
 
 NF=length(flow);
 NA=length(AccessRouter);
@@ -46,16 +48,22 @@ hoptotal=15;
 % total space in EC
 spaceT=ones(size(EdgeCloud))*500;
 % total bandwidth in link
-bandwidthT=ones(size(G.Edges.Weight))*100;
+bandwidthT=ones(size(G.Edges.Weight))*1000;
 % relationship between node and link
 B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
 % surfficiently large number
 M=1000;
 
-save(['../DataStore/flow',num2str(flow(end)),'/network.mat'],'alpha','beta','hopcounter','hoptotal','B','G',...
+save(['../DataStore/flow',num2str(flow(end)),'/network.mat'],'alpha','beta','gamma','hopcounter','hoptotal','B','G',...
     'EdgeCloud','AccessRouter');
 
+para.graph=G;
+para.EdgeCloud=EdgeCloud;
+para.AccessRouter=AccessRouter;
+para.NormalRouter=[GW,NormalRouter];
+
 result=cell(NUMINDEX,1);
+
 for index=1:NUMINDEX
     
     rng(index);
@@ -63,23 +71,20 @@ for index=1:NUMINDEX
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
     % space requirement of flow
-    spaceK=randi(50,size(flow))+50;
+    spaceK=randi([0,50],size(flow))+50;
     % available space in EC
-    spaceR=[randi(300,size(EdgeCloud(1:3)))+200,randi(200,size(EdgeCloud(4:end)))+100];
+    spaceR=[randi([0,300],size(EdgeCloud(1:3)))+200,randi([0,200],size(EdgeCloud(4:end)))+100];
     % bandwidth requirement of flow
-    bandwidthK=randi(10,size(flow))+10;
+    bandwidthK=randi([0,9],size(flow))+1;
     % available bandwidth in link
-    bandwidthR=randi(50,size(G.Edges.Weight))+50;
+    bandwidthR=randi([0,20],size(G.Edges.Weight))+80;
+%     bandwidthR=ones(size(G.Edges.Weight))*100;
     
-    %% packing parameters
-    para.graph=G;
-    para.EdgeCloud=EdgeCloud;
-    para.AccessRouter=AccessRouter;
-    para.NormalRouter=[GW,NormalRouter];
-    
+    % packing parameters
     data.flow=flow;
     data.alpha=alpha;
     data.beta=beta;
+    data.gamma=gamma;
     data.probability=probability;
     data.startPoint=start_point;
     data.hopcounter=hopcounter;
@@ -94,13 +99,13 @@ for index=1:NUMINDEX
     data.B=B;
     data.M=M;
     
-    %% Generating Training Data
+    % Generating Training Data
     imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
     
-    %% ILP solver
-    result{index}=ILP(para,data);
+    % ILP solver
+    result{index}=MILP(para,data);
     
-    %% Related Label
+    % Related Label
     imgLabels(index,:)=result{index}.allocations;
     
 end

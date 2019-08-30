@@ -34,6 +34,7 @@ imgLabelsTrain=imgLabels(1:(TR_Ratio*TOTAL),:);
 imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
 imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);
 
+NUMTEST=size(imgLabelsTest,1);
 %
 % imgLabelsTest2=zeros(2000,5);
 % for ii=1:5
@@ -98,7 +99,6 @@ end
 predLabelsTest=[predLabelsTestMedium{1:NF}];
 scoreTest=[score{1:NF}];
 
-NUMTEST=size(imgLabelsTest,1);
 parfor ii=1:NUMTEST
 %     predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
     predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
@@ -190,7 +190,7 @@ if RANDOM
 % tic;
 solution_R=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
-    solution_R(ii,:)=Randomized(imgDataTest(:,:,:,ii));
+    solution_R(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_G(ii,:));
 end
 % Time_R=toc;
 
