@@ -12,7 +12,7 @@ end
 %% setting parameter
 % ID of mobile users
 global flow;
-flow=1:10;
+flow=1:20;
 % caching cost per EC
 alpha=0.5;
 % transmission cost per hop
@@ -25,7 +25,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=5000;
+NUMINDEX=4;
 
 IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
@@ -63,6 +63,7 @@ para.AccessRouter=AccessRouter;
 para.NormalRouter=[GW,NormalRouter];
 
 result=cell(NUMINDEX,1);
+data=cell(NUMINDEX,1);
 
 for index=1:NUMINDEX
     
@@ -71,45 +72,49 @@ for index=1:NUMINDEX
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
     % space requirement of flow
-    spaceK=randi([0,50],size(flow))+50;
+    spaceK=randi([0,5],size(flow))*10+45;
     % available space in EC
-    spaceR=[randi([0,300],size(EdgeCloud(1:3)))+200,randi([0,200],size(EdgeCloud(4:end)))+100];
+    spaceR=[randi([0,4],size(EdgeCloud(1:2)))*100+600,randi([0,2],size(EdgeCloud(3:end)))*100+200];
     % bandwidth requirement of flow
-    bandwidthK=randi([0,9],size(flow))+1;
+    bandwidthK=randi([0,2],size(flow))*5+5;
     % available bandwidth in link
-    bandwidthR=randi([0,20],size(G.Edges.Weight))+80;
+    bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
 %     bandwidthR=ones(size(G.Edges.Weight))*100;
     
     % packing parameters
-    data.flow=flow;
-    data.alpha=alpha;
-    data.beta=beta;
-    data.gamma=gamma;
-    data.probability=probability;
-    data.startPoint=start_point;
-    data.hopcounter=hopcounter;
-    data.path=path;
-    data.hoptotal=hoptotal;
-    data.spaceK=spaceK;
-    data.spaceR=spaceR;
-    data.spaceT=spaceT;
-    data.bandwidthK=bandwidthK;
-    data.bandwidthR=bandwidthR;
-    data.bandwidthT=bandwidthT;
-    data.B=B;
-    data.M=M;
-    
+    data{index}.flow=flow;
+    data{index}.alpha=alpha;
+    data{index}.beta=beta;
+    data{index}.gamma=gamma;
+    data{index}.probability=probability;
+    data{index}.startPoint=start_point;
+    data{index}.hopcounter=hopcounter;
+    data{index}.path=path;
+    data{index}.hoptotal=hoptotal;
+    data{index}.spaceK=spaceK;
+    data{index}.spaceR=spaceR;
+    data{index}.spaceT=spaceT;
+    data{index}.bandwidthK=bandwidthK;
+    data{index}.bandwidthR=bandwidthR;
+    data{index}.bandwidthT=bandwidthT;
+    data{index}.B=B;
+    data{index}.M=M;
+        
+end
+
+parfor index=1:NUMINDEX
     % Generating Training Data
-    imgData(:,:,:,index)=DataGenerator(data,para,image_layout);
+    imgData(:,:,:,index)=DataGenerator(data{index},para,image_layout);
+%     imshow(1-imgData(:,:,:,index),'Border','tight','initialMagnification','fit');
     
     % ILP solver
-    result{index}=MILP(para,data);
+    result{index}=MILP(para,data{index});
     
     % Related Label
     imgLabels(index,:)=result{index}.allocations;
-    
 end
 
 save(['../DataStore/flow',num2str(flow(end)),'/imgData_' num2str(IMAGE) '.mat'],'imgData');
 save(['../DataStore/flow',num2str(flow(end)),'/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
 save(['../DataStore/flow',num2str(flow(end)),'/solutions.mat'],'result');
+save(['../DataStore/flow',num2str(flow(end)),'/data.mat'],'data');

@@ -5,7 +5,7 @@ clc
 addpath(genpath(pwd));
 
 GREEDY=1;
-RANDOM=0;
+RANDOM=1;
 TR_Ratio=0.8;
 %% load training/test data and label
 global flow;
