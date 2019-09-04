@@ -69,9 +69,9 @@ cost=cost+delta*linkPenalty(label,Net,opt);
 
 % cost=cost+gamma*(spacePenalty(label,Net));
 
-% if (spacePenalty(label,Net)+linkPenalty(label,Net,opt))>0
+% if linkPenalty(label,Net,opt)>0 || any(label==categorical(-1))
 % % if spacePenalty(label,Net)>0
-%     disp(index);
+%     disp('infeasible');
 % end
 
 end

@@ -17,10 +17,10 @@ labfile=['../DataStore/flow',num2str(NF),'/imgLabels_',num2str(layout.image_layo
 load(imgfile);
 load(labfile);
 
-TOTAL=length(imgLabels);
-imgDataTrain=imgData(:,:,:,1:(TR_Ratio*TOTAL));
+TOTAL=size(imgLabels,1);
+imgDataTrain=imgData(:,:,:,1:floor(TR_Ratio*TOTAL));
 inputSize=size(imgDataTrain);
-imgLabelsTrain=imgLabels(1:(TR_Ratio*TOTAL),:);
+imgLabelsTrain=imgLabels(1:floor(TR_Ratio*TOTAL),:);
 
 % imshow(imgDataTrain(:,:,:,1),[0,255],'Border','tight','initialMagnification','fit');
 
@@ -30,11 +30,16 @@ imgLabelsTrain=imgLabels(1:(TR_Ratio*TOTAL),:);
 %     resu=strcat(num2str(imgLabelsTrain(:,2*ii-1)),num2str(imgLabelsTrain(:,2*ii)));
 %     imgLabelsTrain2(:,ii)=str2num(resu);
 % end
-
-imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
-imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);
-
-NUMTEST=size(imgLabelsTest,1);
+if NF==5
+    imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
+    imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);
+    
+    NUMTEST=size(imgLabelsTest,1);
+else
+    imgDataTest=imgData;
+    imgLabelsTest=imgLabels;
+    NUMTEST=size(imgLabelsTest,1);
+end
 %
 % imgLabelsTest2=zeros(2000,5);
 % for ii=1:5
@@ -42,59 +47,71 @@ NUMTEST=size(imgLabelsTest,1);
 %     imgLabelsTest2(:,ii)=str2num(resu);
 % end
 
-%% construct neural network  layers
-layers = [
-    imageInputLayer(inputSize(1:3)) 
-	
-    convolution2dLayer(3,16,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-	
-%     maxPooling2dLayer(2,'Stride',2)
-	
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-	
-%     maxPooling2dLayer(2,'Stride',2)
-	
-    convolution2dLayer(3,64,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
+%% train/load CNN
+if NF==5
+    % construct neural network  layers
+    layers = [
+        imageInputLayer(inputSize(1:3))
+        
+        convolution2dLayer(3,16,'Padding','same')
+        batchNormalizationLayer
+        reluLayer
+        
+        %     maxPooling2dLayer(2,'Stride',2)
+        
+        convolution2dLayer(3,32,'Padding','same')
+        batchNormalizationLayer
+        reluLayer
+        
+        %     maxPooling2dLayer(2,'Stride',2)
+        
+        convolution2dLayer(3,64,'Padding','same')
+        batchNormalizationLayer
+        reluLayer
+        
+        %     convolution2dLayer(3,128,'Padding','same')
+        %     batchNormalizationLayer
+        %     reluLayer
+        
+        fullyConnectedLayer(numel(unique(imgLabelsTrain)))
+        softmaxLayer
+        classificationLayer];
+    %     fullyConnectedLayer(10)
+    %     regressionLayer];
     
-%     convolution2dLayer(3,128,'Padding','same')
-%     batchNormalizationLayer
-%     reluLayer
+    %% training neural network
+    miniBatchSize = 256;
+    options = trainingOptions( 'adam',...
+        'ExecutionEnvironment','auto',...
+        'MiniBatchSize', miniBatchSize,...
+        'MaxEpochs', 30, ...
+        'InitialLearnRate',0.001,...
+        'Plots', 'training-progress');
     
-    fullyConnectedLayer(7)
-    softmaxLayer
-    classificationLayer];
-%     fullyConnectedLayer(10)
-%     regressionLayer];
-
-%% training neural network
-miniBatchSize = 256;
-options = trainingOptions( 'adam',...  
-    'ExecutionEnvironment','auto',...
-    'MiniBatchSize', miniBatchSize,...
-    'MaxEpochs', 40, ...
-     'InitialLearnRate',0.001);%,...
-%     'Plots', 'training-progress');
-
-net = cell(NF,1);
-trainInfo = cell(NF,1);
-
-parfor ii=1:NF
-    [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
+    net = cell(NF,1);
+    trainInfo = cell(NF,1);
+    
+    for ii=1:NF
+        [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
+    end
+    % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
+    save(['net_',num2str(layout.image_layout.opts),'_flow',num2str(NF), '.mat'],'net');
+else
+    load('net_4_flow5.mat');
 end
-% net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
-save(['net_',num2str(layout.image_layout.opts),'_flow',num2str(NF), '.mat'],'net');
 %% test trained neural network
+NI=NF/size(net,1); % number of iterations, must be an integer
 predLabelsTestMedium = cell(NF,1);
 score = cell(NF,1);
+imgDataCopy=imgDataTest;
 % tic;
-for ii=1:NF
-    [predLabelsTestMedium{ii}, score{ii}] = net{ii}.classify(imgDataTest);
+for ii=1:NI
+    for jj=1:size(net,1)
+        index=size(net,1)*(ii-1)+jj; % index of flows
+        [predLabelsTestMedium{index}, score{index}] = net{jj}.classify(imgDataCopy(5*(ii-1)+1:5*(ii-1)+size(net,1),:,:,:));
+    end
+    %update image
+    imgDataCopy=imgUpdate(imgDataTest,predLabelsTestMedium);
 end
 predLabelsTest=[predLabelsTestMedium{1:NF}];
 scoreTest=[score{1:NF}];
@@ -139,26 +156,32 @@ end
 
 value=zeros(NUMTEST,1);
 opt.mode=1;
-offload=inputSize(end);
+if NF==5
+    offload=inputSize(end);
+else
+    offload=0;
+end
 sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
 for ii=1:NUMTEST
-    opt.y=sol.result{ii+offload}.sol.y;
-    opt.z=sol.result{ii+offload}.sol.z;
-    value(ii)=valueCalculator(imgDataTest(:,:,:,ii),imgLabelsTest(ii,:),opt);
+%     opt.y=sol.result{ii+offload}.sol.y;
+%     opt.z=sol.result{ii+offload}.sol.z;
+%     value(ii)=valueCalculator(imgDataTest(:,:,:,ii),imgLabelsTest(ii,:),opt);
+    % or using the fval from MILP solver
+    value(ii)=sol.result{ii+offload}.fval;
 end
 
 %% Greedy
 if GREEDY
 
-% tic;
+tic;
 solution_G=zeros(size(imgLabelsTest));
-parfor ii=1:NUMTEST
+for ii=1:NUMTEST
     solution_G(ii,:)=Greedy(imgDataTest(:,:,:,ii));
 end
-% Time_G=toc;
+Time_G=toc;
 
 counter=0;
-for jj=1:length(imgLabelsTest)
+for jj=1:size(imgLabelsTest,1)
     if all(solution_G(jj,:)==imgLabelsTest(jj,:))
         counter=counter+1;
     end
@@ -187,15 +210,15 @@ end
 %% test randomized as comparison
 if RANDOM
 
-% tic;
+tic;
 solution_R=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
     solution_R(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_G(ii,:));
 end
-% Time_R=toc;
+Time_R=toc;
 
 counter=0;
-for jj=1:length(imgLabelsTest)
+for jj=1:size(imgLabelsTest,1)
     if all(solution_R(jj,:)==imgLabelsTest(jj,:))
         counter=counter+1;
     end

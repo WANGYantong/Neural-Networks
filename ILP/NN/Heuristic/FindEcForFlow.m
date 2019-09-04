@@ -9,7 +9,7 @@ end
 
 function list_ec = Construct_EC_List(Net,ar)
 
-NF=length(Net.sk);
+NF=size(Net.sk,1);
 NE=length(Net.EdgeCloud);
 list_cost=zeros(NF,NE);
 

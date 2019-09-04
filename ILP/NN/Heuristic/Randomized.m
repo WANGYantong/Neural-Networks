@@ -19,7 +19,11 @@ update=original;
 opt.mode=0;
 
 for ii=1:TIMES_HARDCODE
-    update(randi(NF))=categorical(randi(NE));
+    for jj=1:NF
+        if rand>=0.5
+            update(jj)=categorical(randi(NE));
+        end
+    end
     valueUpdate=valueCalculator(img,update,opt);
     valueOriginal=valueCalculator(img,original,opt);
     if valueUpdate<valueOriginal
