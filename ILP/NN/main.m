@@ -32,8 +32,7 @@ imgLabelsTrain=imgLabels(1:floor(TR_Ratio*TOTAL),:);
 % end
 if NF==5
     imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
-    imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);
-    
+    imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);   
     NUMTEST=size(imgLabelsTest,1);
 else
     imgDataTest=imgData;
@@ -110,8 +109,8 @@ for ii=1:NI
         index=size(net,1)*(ii-1)+jj; % index of flows
         [predLabelsTestMedium{index}, score{index}] = net{jj}.classify(imgDataCopy(5*(ii-1)+1:5*(ii-1)+size(net,1),:,:,:));
     end
-    %update image
-    imgDataCopy=imgUpdate(imgDataTest,predLabelsTestMedium);
+    % update image
+    imgDataCopy=imgUpdate(imgDataTest,predLabelsTestMedium,layout);
 end
 predLabelsTest=[predLabelsTestMedium{1:NF}];
 scoreTest=[score{1:NF}];
