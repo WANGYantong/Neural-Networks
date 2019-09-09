@@ -12,7 +12,7 @@ end
 %% setting parameter
 % ID of mobile users
 global flow;
-flow=1:5;
+flow=1:15;
 % caching cost per EC
 alpha=0.5;
 % transmission cost per hop
@@ -25,7 +25,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=5000;
+NUMINDEX=100;
 
 IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;
@@ -112,6 +112,9 @@ parfor index=1:NUMINDEX
     
     % Related Label
     imgLabels(index,:)=result{index}.allocations;
+    
+    fprintf('\ncurrent time: %s; finished iteration: %d',datestr(now, 'mmm.dd,yyyy HH:MM:SS'),index);
+    
 end
 
 save(['../DataStore/flow',num2str(flow(end)),'/imgData_' num2str(IMAGE) '.mat'],'imgData');

@@ -100,10 +100,15 @@ else
 end
 %% test trained neural network
 NI=NF/size(net,1); % number of iterations, must be an integer
+% throw out error if not ingeter
+if floor(NI) ~= NI
+    error('NI is not an integer, not supported yet...');
+end
+    
 predLabelsTestMedium = cell(NF,1);
 score = cell(NF,1);
 imgDataCopy=imgDataTest;
-% tic;
+tic;
 for ii=1:NI
     for jj=1:size(net,1)
         index=size(net,1)*(ii-1)+jj; % index of flows
@@ -113,27 +118,30 @@ for ii=1:NI
     imgDataCopy=imgUpdate(imgDataTest,predLabelsTestMedium,layout);
 end
 predLabelsTest=[predLabelsTestMedium{1:NF}];
+predLabelsTest(isundefined(predLabelsTest))=categorical(1);
 scoreTest=[score{1:NF}];
+NE=length(layout.image_layout.space.y);
+scoreTest(isnan(scoreTest))=1/NE;
 
-parfor ii=1:NUMTEST
+for ii=1:NUMTEST
 %     predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
     predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
 end
 % predLabelsTest=net.predict(imgDataTest);
-% running_time=toc;
+running_time=toc;
 
 counter=0;
-for jj=1:length(imgLabelsTest)
+for jj=1:size(imgLabelsTest,1)
     if all(predLabelsTest(jj,:)==categorical(imgLabelsTest(jj,:)))
 %     if all(round(predLabelsTest(jj,:))==imgLabelsTest(jj,:))
         counter=counter+1;
     end
 end
-accuracy_final = counter / length(imgLabelsTest);
+accuracy_final = counter / size(imgLabelsTest,1);
 
 accuracy=zeros(1,NF);
 for ii=1:NF
-    accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / length(imgLabelsTest);
+    accuracy(ii) = sum(predLabelsTestMedium{ii} ==categorical(imgLabelsTest(:,ii))) / size(imgLabelsTest,1);
 end
 
 counter__=zeros(NUMTEST,1);
@@ -243,5 +251,5 @@ end
 
 end
 
-filenm=[datestr(now,'dd_mm_yyyy_HH_MM'),'_flow',num2str(NF)];
-save([filenm,'.mat']);
+% filenm=[datestr(now,'dd_mm_yyyy_HH_MM'),'_flow',num2str(NF)];
+% save([filenm,'.mat']);

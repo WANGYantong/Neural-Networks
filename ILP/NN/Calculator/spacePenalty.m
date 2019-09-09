@@ -4,6 +4,9 @@ NF=length(label);
 NE=size(Net.hopcounter,2);
 x=zeros(NF,NE);
 for ii=1:NF
+    if isundefined(label(ii))
+        disp(label);
+    end
     if not(label(ii)==categorical(-1))
         x(ii,label(ii))=1;
     end
