@@ -113,6 +113,7 @@ parfor index=1:NUMINDEX
     % Related Label
     imgLabels(index,:)=result{index}.allocations;
     
+    % flag indicates generating process
     fprintf('\ncurrent time: %s; finished iteration: %d',datestr(now, 'mmm.dd,yyyy HH:MM:SS'),index);
     
 end
