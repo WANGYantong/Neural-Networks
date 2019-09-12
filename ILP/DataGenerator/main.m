@@ -12,7 +12,7 @@ end
 %% setting parameter
 % ID of mobile users
 global flow;
-flow=1:15;
+flow=1:20;
 % caching cost per EC
 alpha=0.5;
 % transmission cost per hop
@@ -102,7 +102,7 @@ for index=1:NUMINDEX
         
 end
 
-parfor index=1:NUMINDEX
+parfor index=1:40 %NUMINDEX
     % Generating Training Data
     imgData(:,:,:,index)=DataGenerator(data{index},para,image_layout);
 %     imshow(1-imgData(:,:,:,index),'Border','tight','initialMagnification','fit');
@@ -111,14 +111,15 @@ parfor index=1:NUMINDEX
     result{index}=MILP(para,data{index});
     
     % Related Label
-    imgLabels(index,:)=result{index}.allocations;
+%     imgLabels(index,:)=result{index}.allocations;
     
     % flag indicates generating process
     fprintf('\ncurrent time: %s; finished iteration: %d',datestr(now, 'mmm.dd,yyyy HH:MM:SS'),index);
     
 end
 
-save(['../DataStore/flow',num2str(flow(end)),'/imgData_' num2str(IMAGE) '.mat'],'imgData');
-save(['../DataStore/flow',num2str(flow(end)),'/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
-save(['../DataStore/flow',num2str(flow(end)),'/solutions.mat'],'result');
-save(['../DataStore/flow',num2str(flow(end)),'/data.mat'],'data');
+save('40flow.mat');
+% save(['../DataStore/flow',num2str(flow(end)),'/imgData_' num2str(IMAGE) '.mat'],'imgData');
+% save(['../DataStore/flow',num2str(flow(end)),'/imgLabels_' num2str(IMAGE) '.mat'],'imgLabels');
+% save(['../DataStore/flow',num2str(flow(end)),'/solutions.mat'],'result');
+% save(['../DataStore/flow',num2str(flow(end)),'/data.mat'],'data');
