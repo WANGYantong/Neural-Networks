@@ -63,7 +63,7 @@ cost=Net.alpha*sum(x*te')+...
     Net.beta*sum(probability_z.*hopcounter_z.*z,'all')+...
     Net.gamma*sum((1-sum(sum(probability_z.*z,3),2))*Net.hoptotal);
 
-delta=10;
+delta=20;
 cost=cost+delta*linkPenalty(label,Net,opt);
 % cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(label,Net,opt));
 
