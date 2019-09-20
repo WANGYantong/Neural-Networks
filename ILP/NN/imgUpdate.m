@@ -27,7 +27,7 @@ for ii=1:NIMG
     % prepare y for bandwidth update
     z=zeros(DONE,NA,NE);
     for jj=1:DONE
-            z(jj,Net.prob(jj,:)>0,assignment(ii,jj))=1;
+        z(jj,Net.prob(jj,:)>0,assignment(ii,jj))=1;
     end
     y=zeros(DONE,NL);
     for jj=1:DONE
