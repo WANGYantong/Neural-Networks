@@ -22,6 +22,10 @@ for ii=1:NIMG
     % prepare x for space update
     x=zeros(DONE,NE);
     for jj=1:DONE
+        % if the predicted result is undefined
+        if isundefined(assignment(ii,jj))
+            assignment(ii,jj)=categorical(randi([1,NE]));
+        end
         x(jj,assignment(ii,jj))=1;
     end
     % prepare y for bandwidth update

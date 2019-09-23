@@ -64,15 +64,17 @@ cost=Net.alpha*sum(x*te')+...
     Net.gamma*sum((1-sum(sum(probability_z.*z,3),2))*Net.hoptotal);
 
 delta=20;
-cost=cost+delta*linkPenalty(label,Net,opt);
+[linkValue,link_flag]=linkPenalty(label, Net, opt);
+cost=cost+delta*linkValue;
 % cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(label,Net,opt));
 
 % cost=cost+gamma*(spacePenalty(label,Net));
 
-% if linkPenalty(label,Net,opt)>0 || any(label==categorical(-1))
+% if any(link_flag)==0 || any(label==categorical(-1))
+if linkValue>0 || any(label==categorical(-1))
 % % if spacePenalty(label,Net)>0
-%     disp('infeasible');
-% end
+    fprintf('\n%d', sum(1-link_flag)+sum(label==categorical(-1)));
+end
 
 end
 

@@ -1,4 +1,4 @@
-function linkValue=linkPenalty(label, Net, opt)
+function [linkValue,link_flag]=linkPenalty(label, Net, opt)
 
 NF=length(label);
 [NL,NA,NE]=size(Net.B);
