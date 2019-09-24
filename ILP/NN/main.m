@@ -4,8 +4,9 @@ clc
 
 addpath(genpath(pwd));
 
-GREEDY=1;
-RANDOM=1;
+GRC=0;
+RGC=0;
+RAN=0;
 TR_Ratio=0.8;
 %% load training/test data and label
 global flow;
@@ -80,14 +81,16 @@ if NF==5
     
     %% training neural network
     miniBatchSize = 256;
-    options = trainingOptions( 'sgdm',...
+    options = trainingOptions( 'adam',...
         'ExecutionEnvironment','auto',...
         'MiniBatchSize', miniBatchSize,...
         'MaxEpochs', 30, ...
-        'InitialLearnRate',0.01,...
+        'InitialLearnRate',0.001,...
         'LearnRateSchedule','piecewise',...
         'LearnRateDropPeriod',10,...
         'LearnRateDropFactor',0.1,...
+        'GradientDecayFactor',0.9,...
+        'SquaredGradientDecayFactor',0.999,...
         'Plots', 'training-progress');
     
     net = cell(NF,1);
@@ -180,79 +183,116 @@ for ii=1:NUMTEST
     value(ii)=sol.result{ii+offload}.fval;
 end
 
-%% Greedy
-if GREEDY
+%% GReedy Caching
+if GRC
 
 tic;
-solution_G=zeros(size(imgLabelsTest));
+solution_GRC=zeros(size(imgLabelsTest));
 for ii=1:NUMTEST
-    solution_G(ii,:)=Greedy(imgDataTest(:,:,:,ii));
+    solution_GRC(ii,:)=Greedy(imgDataTest(:,:,:,ii));
 end
-Time_G=toc;
+Time_GRC=toc;
 
 counter=0;
 for jj=1:size(imgLabelsTest,1)
-    if all(solution_G(jj,:)==imgLabelsTest(jj,:))
+    if all(solution_GRC(jj,:)==imgLabelsTest(jj,:))
         counter=counter+1;
     end
 end
-accuracy_Greedy = counter / length(imgLabelsTest);
+accuracy_GRC = counter / length(imgLabelsTest);
 
-counter_Greedy=zeros(NUMTEST,1);
+counter_GRC=zeros(NUMTEST,1);
 for ii=1:NUMTEST
-    counter_Greedy(ii)=sum(solution_G(ii,:)==imgLabelsTest(ii,:));
+    counter_GRC(ii)=sum(solution_GRC(ii,:)==imgLabelsTest(ii,:));
 end
-result_Greedy=zeros(NF,1);
+result_GRC=zeros(NF,1);
 for ii=1:(NF+1)
-    result_Greedy(ii)=sum(counter_Greedy==ii-1);
+    result_GRC(ii)=sum(counter_GRC==ii-1);
 end
 
-precision_Greedy=(0:NF)*result_Greedy/(NF*NUMTEST);
+precision_GRC=(0:NF)*result_GRC/(NF*NUMTEST);
 
-value_Greedy=zeros(NUMTEST,1);
+value_GRC=zeros(NUMTEST,1);
 opt.mode=0;
 for ii=1:NUMTEST
-    value_Greedy(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_G(ii,:),opt);
+    value_GRC(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_GRC(ii,:),opt);
 end
 
 end
 
-%% test randomized as comparison
-if RANDOM
+%% test Randomized Greedy Caching as comparison
+if RGC
 
 tic;
-solution_R=zeros(size(imgLabelsTest));
+solution_RGC=zeros(size(imgLabelsTest));
 parfor ii=1:NUMTEST
-    solution_R(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_G(ii,:));
+    solution_RGC(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_GRC(ii,:));
 end
-Time_R=toc;
+Time_RGC=toc;
 
 counter=0;
 for jj=1:size(imgLabelsTest,1)
-    if all(solution_R(jj,:)==imgLabelsTest(jj,:))
+    if all(solution_RGC(jj,:)==imgLabelsTest(jj,:))
         counter=counter+1;
     end
 end
-accuracy_Random = counter / length(imgLabelsTest);
+accuracy_RGC = counter / length(imgLabelsTest);
 
-counter_Random=zeros(NUMTEST,1);
+counter_RGC=zeros(NUMTEST,1);
 for ii=1:NUMTEST
-    counter_Random(ii)=sum(solution_R(ii,:)==imgLabelsTest(ii,:));
+    counter_RGC(ii)=sum(solution_RGC(ii,:)==imgLabelsTest(ii,:));
 end
-result_Random=zeros(NF,1);
+result_RGC=zeros(NF,1);
 for ii=1:(NF+1)
-    result_Random(ii)=sum(counter_Random==ii-1);
+    result_RGC(ii)=sum(counter_RGC==ii-1);
 end
 
-precision_Random=(0:NF)*result_Random/(NF*NUMTEST);
+precision_RGC=(0:NF)*result_RGC/(NF*NUMTEST);
 
-value_Random=zeros(NUMTEST,1);
+value_RGC=zeros(NUMTEST,1);
 opt.mode=0;
 for ii=1:NUMTEST
-    value_Random(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_R(ii,:),opt);
+    value_RGC(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_RGC(ii,:),opt);
 end
 
 end
 
-filenm=[datestr(now,'dd_mm_yyyy_HH_MM'),'_flow',num2str(NF)];
-save([filenm,'.mat']);
+%% Randomized assignment
+if RAN
+    
+tic;
+solution_RAN=zeros(size(imgLabelsTest));
+for ii=1:NUMTEST
+    solution_RAN(ii,:)=randi([1,NE],1,NF);
+end
+Time_RAN=toc;
+
+counter=0;
+for jj=1:size(imgLabelsTest,1)
+    if all(solution_RAN(jj,:)==imgLabelsTest(jj,:))
+        counter=counter+1;
+    end
+end
+accuracy_RAN = counter / length(imgLabelsTest);
+
+counter_RAN=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter_RAN(ii)=sum(solution_RAN(ii,:)==imgLabelsTest(ii,:));
+end
+result_RAN=zeros(NF,1);
+for ii=1:(NF+1)
+    result_RAN(ii)=sum(counter_RAN==ii-1);
+end
+
+precision_RAN=(0:NF)*result_RAN/(NF*NUMTEST);
+
+value_RAN=zeros(NUMTEST,1);
+opt.mode=0;
+for ii=1:NUMTEST
+    value_RAN(ii)=valueCalculator(imgDataTest(:,:,:,ii),solution_RAN(ii,:),opt);
+end
+    
+end
+
+% filenm=[datestr(now,'dd_mm_yyyy_HH_MM'),'_flow',num2str(NF)];
+% save([filenm,'.mat']);
