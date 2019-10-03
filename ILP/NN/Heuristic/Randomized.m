@@ -1,5 +1,7 @@
 function solution = Randomized(img,original)
 
+rng(1);
+
 NF=size(img,1);
 
 Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
@@ -12,7 +14,7 @@ Net.BR=BR;
 
 NE=length(Net.EdgeCloud);
 
-TIMES_HARDCODE=1000;
+TIMES_HARDCODE=200;
 original=categorical(original);
 update=original;
 
