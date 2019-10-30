@@ -4,9 +4,9 @@ clc
 
 addpath(genpath(pwd));
 
-GRC=0;
-RGC=0;
-RAN=0;
+GRC=1;
+RGC=1;
+RAN=1;
 TR_Ratio=0.8;
 %% load training/test data and label
 global flow;
@@ -114,7 +114,7 @@ end
 predLabelsTestMedium = cell(NF,1);
 score = cell(NF,1);
 imgDataCopy=imgDataTest;
-tic;
+watch_tog=tic;
 for ii=1:NI
     for jj=1:size(net,1)
         index=size(net,1)*(ii-1)+jj; % index of flows
@@ -129,12 +129,16 @@ scoreTest=[score{1:NF}];
 NE=length(layout.image_layout.space.y);
 scoreTest(isnan(scoreTest))=1/NE;
 
+watch_MILP=tic;
 for ii=1:NUMTEST
-%     predLabelsTest(ii,:)=combiner(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
-    predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+%     predLabelsTest(ii,:)=combiner_I(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
+%     predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    predLabelsTest(ii,:)=combiner_III(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
 end
 % predLabelsTest=net.predict(imgDataTest);
-running_time=toc;
+running_time_MILP=toc(watch_MILP);
+
+running_time_tog=toc(watch_tog);
 
 counter=0;
 for jj=1:size(imgLabelsTest,1)
@@ -222,11 +226,14 @@ end
 
 %% test Randomized Greedy Caching as comparison
 if RGC
-
-tic;
+    
 solution_RGC=zeros(size(imgLabelsTest));
+
+% solution_RGC_buff=solution_RGC;
+tic;
 parfor ii=1:NUMTEST
     solution_RGC(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_GRC(ii,:));
+%     solution_RGC(ii,:)=Randomized(imgDataTest(:,:,:,ii),solution_RGC_buff(ii,:));
 end
 Time_RGC=toc;
 

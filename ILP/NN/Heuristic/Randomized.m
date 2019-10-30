@@ -1,7 +1,5 @@
 function solution = Randomized(img,original)
 
-rng(1);
-
 NF=size(img,1);
 
 Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
