@@ -74,7 +74,7 @@ ProCach.Constraints.Constr11=phi_constraint3;
 ProCach.Constraints.Constr12=t_constraint;
 
 %% optimal solver
-opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*8);
+opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*12);
 
 tic;
 [sol,fval,exitflag,output]=solve(ProCach,'Options',opts);

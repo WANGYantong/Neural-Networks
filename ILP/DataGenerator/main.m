@@ -12,7 +12,7 @@ end
 %% setting parameter
 % ID of mobile users
 global flow;
-flow=1:10;
+flow=1:20;
 % caching cost per EC
 alpha=0.5;
 % transmission cost per hop
@@ -25,7 +25,7 @@ NA=length(AccessRouter);
 NE=length(EdgeCloud);
 NL=length(G.Edges.EndNodes);
 
-NUMINDEX=1000;
+NUMINDEX=100;
 
 IMAGE=4; % 0 for Constants+Variables
                  % 1 for Variables; 2&3 for Centralized Variables;

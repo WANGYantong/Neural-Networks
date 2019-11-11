@@ -4,9 +4,9 @@ clc
 
 addpath(genpath(pwd));
 
-GRC=1;
-RGC=1;
-RAN=1;
+GRC=0;
+RGC=0;
+RAN=0;
 TR_Ratio=0.8;
 %% load training/test data and label
 global flow;
@@ -128,17 +128,28 @@ predLabelsTest(isundefined(predLabelsTest))=categorical(1);
 scoreTest=[score{1:NF}];
 NE=length(layout.image_layout.space.y);
 scoreTest(isnan(scoreTest))=1/NE;
+running_time_CNN=toc(watch_tog);
 
-watch_MILP=tic;
-for ii=1:NUMTEST
+result_CNN_MILP=cell(NUMTEST,1);
+parfor ii=1:NUMTEST
 %     predLabelsTest(ii,:)=combiner_I(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:), 2);
 %     predLabelsTest(ii,:)=combiner_II(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
-    predLabelsTest(ii,:)=combiner_III(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    result_CNN_MILP{ii}=combiner_III(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    predLabelsTest(ii,:)=result_CNN_MILP{ii}.allocations;
 end
 % predLabelsTest=net.predict(imgDataTest);
-running_time_MILP=toc(watch_MILP);
+% running_time=toc(watch_tog);
 
-running_time_tog=toc(watch_tog);
+MILP_time=0;
+for ii=1:NUMTEST
+    MILP_time=MILP_time+result_CNN_MILP{ii}.time;
+end
+running_time=running_time_CNN+MILP_time;
+
+saving_variables=0;
+for ii=1:NUMTEST
+    saving_variables=saving_variables+result_CNN_MILP{ii}.num_var;
+end
 
 counter=0;
 for jj=1:size(imgLabelsTest,1)
@@ -166,8 +177,11 @@ end
 precision=(0:NF)*result/(NF*NUMTEST);
 
 value__=zeros(NUMTEST,1);
-opt.mode=0;
+% opt.mode=0;
+opt.mode=1;
 for ii=1:NUMTEST
+    opt.y=result_CNN_MILP{ii}.sol.y;
+    opt.z=result_CNN_MILP{ii}.sol.z;
     value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:),opt);
 end
 
@@ -180,11 +194,17 @@ else
 end
 sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
 for ii=1:NUMTEST
-%     opt.y=sol.result{ii+offload}.sol.y;
-%     opt.z=sol.result{ii+offload}.sol.z;
+    opt.y=sol.result{ii+offload}.sol.y;
+    opt.z=sol.result{ii+offload}.sol.z;
 %     value(ii)=valueCalculator(imgDataTest(:,:,:,ii),imgLabelsTest(ii,:),opt);
     % or using the fval from MILP solver
     value(ii)=sol.result{ii+offload}.fval;
+end
+
+for ii=1:NUMTEST
+    if value(ii)>value__(ii)
+        value(ii)=value__(ii);
+    end
 end
 
 %% GReedy Caching

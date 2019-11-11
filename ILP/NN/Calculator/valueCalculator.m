@@ -21,12 +21,12 @@ Net.BR=BR;
 
 % check the constraints satisfaction
 % if not satisfy the 
-while(1)
-    [spaceValue,label]=spacePenalty(label,Net);
-    if spaceValue ==0
-        break;
-    end
-end
+% while(1)
+%     [spaceValue,label]=spacePenalty(label,Net);
+%     if spaceValue ==0
+%         break;
+%     end
+% end
 
 x=zeros(NF,NE);
 for ii=1:NF
@@ -53,7 +53,7 @@ hopcounter_z=reshape(hopcounter_z,NF,NA,NE);
 
 x=round(x);
 z=round(z);
-te=1./(1.0001-sum(Net.sk.*x,1));
+te=1./(1-sum(Net.sk.*x,1));
 
 % te(te<=0)=te(te<=0)-min(te)+100; % in case of minus value
 % te(te<=0)=100;
