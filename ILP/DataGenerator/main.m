@@ -72,13 +72,17 @@ for index=1:NUMINDEX
     % moving probability
     [probability,start_point]=SetMovProb(length(flow),length(AccessRouter));
     % space requirement of flow
-    spaceK=randi([0,5],size(flow))*10+45;
+%     spaceK=randi([0,5],size(flow))*10+45;
+    spaceK=randi([0,20],size(flow))*2+10;
     % available space in EC
-    spaceR=[randi([0,4],size(EdgeCloud(1:2)))*100+600,randi([0,2],size(EdgeCloud(3:end)))*100+200];
+%     spaceR=[randi([0,4],size(EdgeCloud(1:2)))*100+600,randi([0,2],size(EdgeCloud(3:end)))*100+200];
+    spaceR=randi([0,8],size(EdgeCloud))*50+101;
     % bandwidth requirement of flow
-    bandwidthK=randi([0,2],size(flow))*5+5;
+%     bandwidthK=randi([0,2],size(flow))*5+5;
+    bandwidthK=randi([0,9],size(flow))+1;
     % available bandwidth in link
-    bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
+%     bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
+    bandwidthR=randi([0,5],size(G.Edges.Weight))*10+50;
 %     bandwidthR=ones(size(G.Edges.Weight))*100;
     
     % packing parameters
