@@ -19,9 +19,11 @@ load(imgfile);
 load(labfile);
 
 TOTAL=size(imgLabels,1);
-imgDataTrain=imgData(:,:,:,1:floor(TR_Ratio*TOTAL));
+% imgDataTrain=imgData(:,:,:,1:floor(TR_Ratio*TOTAL));
+imgDataTrain=imgData(:,:,:,1:900);
 inputSize=size(imgDataTrain);
-imgLabelsTrain=imgLabels(1:floor(TR_Ratio*TOTAL),:);
+% imgLabelsTrain=imgLabels(1:floor(TR_Ratio*TOTAL),:);
+imgLabelsTrain=imgLabels(1:900,:);
 
 % imshow(imgDataTrain(:,:,:,1),[0,255],'Border','tight','initialMagnification','fit');
 
@@ -31,9 +33,11 @@ imgLabelsTrain=imgLabels(1:floor(TR_Ratio*TOTAL),:);
 %     resu=strcat(num2str(imgLabelsTrain(:,2*ii-1)),num2str(imgLabelsTrain(:,2*ii)));
 %     imgLabelsTrain2(:,ii)=str2num(resu);
 % end
-if NF==5
-    imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
-    imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);   
+if NF==10
+%     imgDataTest=imgData(:,:,:,(TR_Ratio*TOTAL+1):TOTAL);
+%     imgLabelsTest=imgLabels((TR_Ratio*TOTAL+1):TOTAL,:);   
+    imgDataTest=imgData(:,:,:,9901:TOTAL);
+    imgLabelsTest=imgLabels(9901:TOTAL,:);   
     NUMTEST=size(imgLabelsTest,1);
 else
     imgDataTest=imgData;
@@ -48,7 +52,7 @@ end
 % end
 
 %% train/load CNN
-if NF==5
+if NF==10
     % construct neural network  layers
     layers = [
         imageInputLayer(inputSize(1:3))
@@ -57,21 +61,23 @@ if NF==5
         batchNormalizationLayer
         reluLayer
         
-        %     maxPooling2dLayer(2,'Stride',2)
+        maxPooling2dLayer(2,'Stride',2)
         
-        convolution2dLayer(3,32,'Padding','same')
-        batchNormalizationLayer
-        reluLayer
-        
-        %     maxPooling2dLayer(2,'Stride',2)
-        
-        convolution2dLayer(3,64,'Padding','same')
-        batchNormalizationLayer
-        reluLayer
-        
-        %     convolution2dLayer(3,128,'Padding','same')
-        %     batchNormalizationLayer
-        %     reluLayer
+%         convolution2dLayer(3,32,'Padding','same')
+%         batchNormalizationLayer
+%         reluLayer
+%         
+%         maxPooling2dLayer(2,'Stride',2)
+%         
+%         convolution2dLayer(3,64,'Padding','same')
+%         batchNormalizationLayer
+%         reluLayer
+%         
+%         maxPooling2dLayer(2,'Stride',2)
+%         
+%         convolution2dLayer(3,128,'Padding','same')
+%         batchNormalizationLayer
+%         reluLayer
         
         fullyConnectedLayer(numel(unique(imgLabelsTrain)))
         softmaxLayer
@@ -80,25 +86,28 @@ if NF==5
     %     regressionLayer];
     
     %% training neural network
-    miniBatchSize = 256;
+    miniBatchSize = 100;
     options = trainingOptions( 'adam',...
         'ExecutionEnvironment','auto',...
         'MiniBatchSize', miniBatchSize,...
-        'MaxEpochs', 30, ...
-        'InitialLearnRate',0.001,...
-        'LearnRateSchedule','piecewise',...
-        'LearnRateDropPeriod',10,...
-        'LearnRateDropFactor',0.1,...
-        'GradientDecayFactor',0.9,...
-        'SquaredGradientDecayFactor',0.999,...
-        'Plots', 'training-progress');
+        'MaxEpochs', 10, ...
+        'InitialLearnRate',0.001);
+%         'Plots', 'training-progress');
+%         'InitialLearnRate',0.001,...
+%         'LearnRateSchedule','piecewise',...
+%         'LearnRateDropPeriod',10,...
+%         'LearnRateDropFactor',0.1,...
+%         'GradientDecayFactor',0.9,...
+%         'SquaredGradientDecayFactor',0.999,...
+%         'Plots', 'training-progress');
     
     net = cell(NF,1);
     trainInfo = cell(NF,1);
-    
+    tic;
     for ii=1:NF
         [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, categorical(imgLabelsTrain(:,ii)), layers, options);
     end
+    training_time=toc;
     % net=trainNetwork(imgDataTrain, imgLabelsTrain, layers, options);
     save(['net_',num2str(layout.image_layout.opts),'_flow',num2str(NF), '.mat'],'net');
 else
@@ -180,8 +189,8 @@ value__=zeros(NUMTEST,1);
 % opt.mode=0;
 opt.mode=1;
 for ii=1:NUMTEST
-    opt.y=result_CNN_MILP{ii}.sol.y;
-    opt.z=result_CNN_MILP{ii}.sol.z;
+%     opt.y=result_CNN_MILP{ii}.sol.y;
+%     opt.z=result_CNN_MILP{ii}.sol.z;
     value__(ii)=valueCalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:),opt);
 end
 
