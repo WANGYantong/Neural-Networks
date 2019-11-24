@@ -15,20 +15,51 @@ load(labfile);
 
 %%
 training_size=1e3;
-batch_size=1e2;
+batch_size=2e2;
 epoch_size=10;
 learning_rate=1e-3;
+HID_INDEX=4;
 
 imgDataTrain=imgData(:,:,:,1:training_size);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=categorical(imgLabels(1:training_size,:));
 
-imgDataTest=imgData(:,:,:,9901:1e4);
-imgLabelsTest=categorical(imgLabels(9901:1e4,:));
+imgDataTest=imgData(:,:,:,7001:7100);
+imgLabelsTest=categorical(imgLabels(7001:7100,:));
 NUMTEST=size(imgLabelsTest,1);
 
 %%
-layers = [
+layer=cell(4,1);
+layer{1} = [
+    imageInputLayer(inputSize(1:3))
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)  
+
+    fullyConnectedLayer(numel(unique(imgLabelsTrain)))
+    softmaxLayer
+    classificationLayer];
+
+layer{2} = [
+    imageInputLayer(inputSize(1:3))
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+      
+    fullyConnectedLayer(numel(unique(imgLabelsTrain)))
+    softmaxLayer
+    classificationLayer];
+
+layer{3} = [
     imageInputLayer(inputSize(1:3))
     
     convolution2dLayer(3,16,'Padding','same')
@@ -45,13 +76,30 @@ layers = [
     batchNormalizationLayer
     reluLayer
 %     maxPooling2dLayer(2,'Stride',2)
-    %
-    convolution2dLayer(3,128,'Padding','same')
+    
+    fullyConnectedLayer(numel(unique(imgLabelsTrain)))
+    softmaxLayer
+    classificationLayer];
+
+layer{4} = [
+    imageInputLayer(inputSize(1:3))
+    
+    convolution2dLayer(3,16,'Padding','same')
     batchNormalizationLayer
     reluLayer
 %     maxPooling2dLayer(2,'Stride',2)
     
-    convolution2dLayer(3,256,'Padding','same')
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+
+    convolution2dLayer(3,128,'Padding','same')
     batchNormalizationLayer
     reluLayer
 %     maxPooling2dLayer(2,'Stride',2)
@@ -59,6 +107,8 @@ layers = [
     fullyConnectedLayer(numel(unique(imgLabelsTrain)))
     softmaxLayer
     classificationLayer];
+
+layers=layer{HID_INDEX};
 
 options = trainingOptions( 'adam',...
     'ExecutionEnvironment','auto',...
