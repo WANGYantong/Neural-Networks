@@ -1,4 +1,4 @@
-function hyperCandidate(training_size,batch_size,epoch_size,learning_rate,HID_INDEX)
+function result=hyperCandidate(training_size,batch_size,epoch_size,learning_rate,HID_INDEX)
 
 flow=1:10;
 NF=length(flow);
@@ -19,7 +19,7 @@ imgLabelsTest=categorical(lab.imgLabels(7001:7100,:));
 NUMTEST=size(imgLabelsTest,1);
 
 %% CNN structure
-layer=cell(4,1);
+layer=cell(10,1);
 layer{1} = [
     imageInputLayer(inputSize(1:3))
     
@@ -93,6 +93,81 @@ layer{4} = [
     batchNormalizationLayer
     reluLayer
 %     maxPooling2dLayer(2,'Stride',2)
+    
+    fullyConnectedLayer(numel(unique(imgLabelsTrain)))
+    softmaxLayer
+    classificationLayer];
+
+layer{16} = [
+    imageInputLayer(inputSize(1:3))
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+
+    convolution2dLayer(3,16,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+%     maxPooling2dLayer(2,'Stride',2)
+
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,64,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    convolution2dLayer(3,128,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
     
     fullyConnectedLayer(numel(unique(imgLabelsTrain)))
     softmaxLayer
