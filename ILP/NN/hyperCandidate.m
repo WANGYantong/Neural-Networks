@@ -227,14 +227,14 @@ result.testing_accuracy=testing_accuracy;
 fprintf('\n/**************************************************/\n');
 fprintf('training_size=%d,batch_size=%d,\nepoch_size=%d,learning_rate=%.4f,hidden_layer=%d\n',...
     training_size,batch_size,epoch_size,learning_rate,HID_INDEX);
-fprintf('\n training time:%.4f',result.training_time);
-fprintf('\n testing time:%.4f',result.testing_time);
-fprintf('\n training accuracy:%.5f',result.training_accuracy);
-fprintf('\n testing accuracy(e1):%.5f',result.testing_accuracy(1));
-fprintf('\n testing accuracy(e2):%.5f',result.testing_accuracy(2));
-fprintf('\n testing accuracy(e3):%.5f',result.testing_accuracy(3));
-fprintf('\n testing accuracy(e4):%.5f',result.testing_accuracy(4));
-fprintf('\n testing accuracy(e5):%.5f',result.testing_accuracy(5));
+% fprintf('\n training time:%.4f',result.training_time);
+% fprintf('\n testing time:%.4f',result.testing_time);
+% fprintf('\n training accuracy:%.5f',result.training_accuracy);
+% fprintf('\n testing accuracy(e1):%.5f',result.testing_accuracy(1));
+% fprintf('\n testing accuracy(e2):%.5f',result.testing_accuracy(2));
+% fprintf('\n testing accuracy(e3):%.5f',result.testing_accuracy(3));
+% fprintf('\n testing accuracy(e4):%.5f',result.testing_accuracy(4));
+% fprintf('\n testing accuracy(e5):%.5f',result.testing_accuracy(5));
 fprintf('\n');
 
 end
