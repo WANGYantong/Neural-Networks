@@ -55,9 +55,9 @@ x=round(x);
 z=round(z);
 te=1./(1-sum(Net.sk.*x,1));
 
-% te(te<=0)=te(te<=0)-min(te)+100; % in case of minus value
+te(te<=0)=te(te<=0)-min(te)+100; % in case of minus value
 % te(te<=0)=100;
-% te(te==Inf)=100; % in case of infinity value
+te(te==Inf)=100; % in case of infinity value
 
 cost=Net.alpha*sum(x*te')+...
     Net.beta*sum(probability_z.*hopcounter_z.*z,'all')+...
@@ -71,10 +71,10 @@ cost=cost+delta*linkValue;
 % cost=cost+gamma*(spacePenalty(label,Net));
 
 % if any(link_flag)==0 || any(label==categorical(-1))
-if linkValue>0 || any(label==categorical(-1))
-% % if spacePenalty(label,Net)>0
-    fprintf('\n%d', sum(1-link_flag)+sum(label==categorical(-1)));
-end
+% if linkValue>0 || any(label==categorical(-1))
+% % % if spacePenalty(label,Net)>0
+%     fprintf('\n%d', sum(1-link_flag)+sum(label==categorical(-1)));
+% end
 
 end
 

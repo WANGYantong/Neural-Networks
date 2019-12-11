@@ -11,9 +11,10 @@ training_size=1024;
 % batch_size=[1e2,2e2,5e2,1e3];
 batch_size=64;
 % epoch_size=[10,20,30,40];
-epoch_size=[1,5,10,15,20,25,30,35,40,45,50,55];
-% learning_rate=[1e-4,1e-3,1e-2,1e-1,1];
-learning_rate=1e-3;
+% epoch_size=[1,5,10,15,20,25,30,35,40,45,50,55];
+epoch_size=10;
+learning_rate=[1e-4,1e-3,1e-2,1e-1,1];
+% learning_rate=1e-3;
 % hid_index=[1,2,3,4,16];
 hid_index=1;
 
@@ -30,12 +31,12 @@ hid_index=1;
 % end
 % 
 IINUM=length(mount_carlo);
-JJNUM=length(epoch_size);
+JJNUM=length(learning_rate);
 result=cell(IINUM,JJNUM);
 parfor ii=1:IINUM
     for jj=1:JJNUM
             result{ii,jj}=hyperCandidate(training_size,batch_size,...
-                epoch_size(jj),learning_rate,hid_index);
+                epoch_size,learning_rate(jj),hid_index);
     end
 end
 
@@ -138,39 +139,10 @@ end
 % hold off;
 
 %% the effect of epoch
-% training_accuracy=zeros(length(mount_carlo),length(epoch_size));
-% testing_accuracy=training_accuracy;
-% for ii=1:length(mount_carlo)
-%     for jj=1:length(epoch_size)
-%         training_accuracy(ii,jj)=result{ii,jj}.training_accuracy;
-%         testing_accuracy(ii,jj)=result{ii,jj}.testing_accuracy(1);
-%     end
-% end
-% 
-% training_accuracy_plot=squeeze(mean(training_accuracy));
-% testing_accuracy_plot=squeeze(mean(testing_accuracy));
-% line_style={'-p','-s','-d','-^','-+'};
-% color_style={[0.85,0.33,0.10],[0.47,0.67,0.19],[0.30,0.75,0.93],...
-%     [0.64,0.08,0.18],[0.49,0.18,0.56]};
-% 
-% figure(1);
-% hold on;
-% plot(epoch_size,training_accuracy_plot,line_style{1},'Color',color_style{1},'LineWidth',3.6);
-% plot(epoch_size,testing_accuracy_plot,line_style{2},'Color',color_style{2},'LineWidth',3.6);
-% xlabel('Epoch','FontSize',24);
-% ylabel('Mean Accuracy','FontSize',24);
-% xlim([1,55]);
-% lgd=legend({'Training','Testing'},'Location','south','NumColumns',2);
-% set(gca,'fontsize',24);
-% lgd.FontSize=24;
-% grid on;
-% hold off;
-
-%% the effect of learning rate
-training_accuracy=zeros(length(mount_carlo),length(learning_rate));
+training_accuracy=zeros(length(mount_carlo),length(epoch_size));
 testing_accuracy=training_accuracy;
 for ii=1:length(mount_carlo)
-    for jj=1:length(learning_rate)
+    for jj=1:length(epoch_size)
         training_accuracy(ii,jj)=result{ii,jj}.training_accuracy;
         testing_accuracy(ii,jj)=result{ii,jj}.testing_accuracy(1);
     end
@@ -184,12 +156,41 @@ color_style={[0.85,0.33,0.10],[0.47,0.67,0.19],[0.30,0.75,0.93],...
 
 figure(1);
 hold on;
-plot(learning_rate,training_accuracy_plot,line_style{1},'Color',color_style{1},'LineWidth',3.6);
-plot(learning_rate,testing_accuracy_plot,line_style{2},'Color',color_style{2},'LineWidth',3.6);
-x_axes=xlabel('Learning Rate','FontSize',24);
+plot(epoch_size,training_accuracy_plot,line_style{1},'Color',color_style{1},'LineWidth',3.6);
+plot(epoch_size,testing_accuracy_plot,line_style{2},'Color',color_style{2},'LineWidth',3.6);
+xlabel('Epoch','FontSize',24);
 ylabel('Mean Accuracy','FontSize',24);
+xlim([1,55]);
 lgd=legend({'Training','Testing'},'Location','south','NumColumns',2);
-set(gca,'fontsize',24,'xscale','log');
+set(gca,'fontsize',24);
 lgd.FontSize=24;
 grid on;
 hold off;
+
+%% the effect of learning rate
+% training_accuracy=zeros(length(mount_carlo),length(learning_rate));
+% testing_accuracy=training_accuracy;
+% for ii=1:length(mount_carlo)
+%     for jj=1:length(learning_rate)
+%         training_accuracy(ii,jj)=result{ii,jj}.training_accuracy;
+%         testing_accuracy(ii,jj)=result{ii,jj}.testing_accuracy(1);
+%     end
+% end
+% 
+% training_accuracy_plot=squeeze(mean(training_accuracy));
+% testing_accuracy_plot=squeeze(mean(testing_accuracy));
+% line_style={'-p','-s','-d','-^','-+'};
+% color_style={[0.85,0.33,0.10],[0.47,0.67,0.19],[0.30,0.75,0.93],...
+%     [0.64,0.08,0.18],[0.49,0.18,0.56]};
+% 
+% figure(1);
+% hold on;
+% plot(learning_rate,training_accuracy_plot,line_style{1},'Color',color_style{1},'LineWidth',3.6);
+% plot(learning_rate,testing_accuracy_plot,line_style{2},'Color',color_style{2},'LineWidth',3.6);
+% x_axes=xlabel('Learning Rate','FontSize',24);
+% ylabel('Mean Accuracy','FontSize',24);
+% lgd=legend({'Training','Testing'},'Location','south','NumColumns',2);
+% set(gca,'fontsize',24,'xscale','log');
+% lgd.FontSize=24;
+% grid on;
+% hold off;
