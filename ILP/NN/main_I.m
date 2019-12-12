@@ -79,18 +79,22 @@ for jj=1:length(testing_accuracy)
 end
 
 %% Hill Climbing Algorithm
-result_HC=cell(NUMTEST,1);
+alloc_HC=cell(NUMTEST,1);
 value_HC=zeros(NUMTEST,1);
+
+climbing_clock=tic;
 for ii=1:NUMTEST
     [buff_HC,value_HC(ii)]=HillClimbing(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
-    result_HC{ii}=buff_HC';
+    alloc_HC{ii}=buff_HC';
 end
+climbing_time=toc(climbing_clock);
+climbing_time=climbing_time/NF;
 
-result_hill=[result_HC{1:NUMTEST}]';
+alloc_hill=[alloc_HC{1:NUMTEST}]';
 
 counter=zeros(NUMTEST,1);
 for ii=1:NUMTEST
-    counter(ii)=sum(result_hill(ii,:)==categorical(imgLabelsTest(ii,:)));
+    counter(ii)=sum(alloc_hill(ii,:)==categorical(imgLabelsTest(ii,:)));
 end
 counter_NF=zeros(NF,1);
 for ii=1:(NF+1)
@@ -98,5 +102,31 @@ for ii=1:(NF+1)
 end
 
 hill_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
+hill_time=testing_time+climbing_time;
 %% sub MILP resolving
+result_sM=cell(NUMTEST,1);
+alloc_sM=cell(NUMTEST,1);
+value_sM=zeros(NUMTEST,1);
 
+subM_clock=tic;
+for ii=1:NUMTEST
+    result_sM{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    alloc_sM{ii}=result_sM{ii}.allocations;
+    value_sM(ii)=result_sM{ii}.fval;
+end
+subM_time=toc(subM_clock);
+subM_time=subM_time/NF;
+
+alloc_sub=[alloc_sM{1:NUMTEST}]';
+
+counter=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter(ii)=sum(alloc_sub(ii,:)==categorical(imgLabelsTest(ii,:)));
+end
+counter_NF=zeros(NF,1);
+for ii=1:(NF+1)
+    counter_NF(ii)=sum(counter==ii-1);
+end
+
+sub_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
+sub_time=testing_time+subM_time;

@@ -1,4 +1,4 @@
-function result = combiner_III(img,labelOriginal,score)
+function result = subMILP(img,labelOriginal,score)
 % call MILP after compression
 
 %% generate one more bound for decision variable x
