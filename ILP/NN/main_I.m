@@ -68,7 +68,7 @@ scoreTest=[score{1:NF}];
 % NE=length(layout.image_layout.space.y);
 % scoreTest(isnan(scoreTest))=1/NE;
 testing_time=toc(testing_clock);
-testing_time=testing_time/NF;
+testing_time=testing_time/NUMTEST;
 
 testing_accuracy=zeros(6,1);
 opt.NF=NF;
@@ -88,7 +88,7 @@ for ii=1:NUMTEST
     alloc_HC{ii}=buff_HC';
 end
 climbing_time=toc(climbing_clock);
-climbing_time=climbing_time/NF;
+climbing_time=climbing_time/NUMTEST;
 
 alloc_hill=[alloc_HC{1:NUMTEST}]';
 
@@ -115,7 +115,7 @@ for ii=1:NUMTEST
     value_sM(ii)=result_sM{ii}.fval;
 end
 subM_time=toc(subM_clock);
-subM_time=subM_time/NF;
+subM_time=subM_time/NUMTEST;
 
 alloc_sub=[alloc_sM{1:NUMTEST}]';
 
