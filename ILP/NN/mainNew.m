@@ -89,6 +89,7 @@ for ii=1:NUMTEST
 end
 climbing_time=toc(climbing_clock);
 climbing_time=climbing_time/NUMTEST;
+disp('hill climbing finished');
 
 alloc_hill=[alloc_HC{1:NUMTEST}]';
 
@@ -103,6 +104,7 @@ end
 
 hill_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
 hill_time=testing_time+climbing_time;
+
 %% sub MILP resolving
 result_sM=cell(NUMTEST,1);
 alloc_sM=cell(NUMTEST,1);
@@ -116,6 +118,7 @@ for ii=1:NUMTEST
 end
 subM_time=toc(subM_clock);
 subM_time=subM_time/NUMTEST;
+disp('sub MILP finished');
 
 alloc_sub=[alloc_sM{1:NUMTEST}]';
 

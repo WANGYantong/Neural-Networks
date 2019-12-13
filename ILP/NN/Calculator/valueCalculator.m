@@ -1,24 +1,15 @@
-function cost = valueCalculator(img,label,opt)
+function cost = valueCalculator(Net,label,opt)
 % opt for addtional decision variable y&z.
 % opt.mode=0: generate y&z depend on x
 % opt.mode=1: read y&z from external file
 
-NF=length(label);
+% if not(iscategorical(label))
+%     label=categorical(label);
+% end  
 
-if not(iscategorical(label))
-    label=categorical(label);
-end  
-
-Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
-[prob,sk,bk,SR,BR]=imageDecoding(img);
-Net.prob=prob;
-Net.sk=sk;
-Net.bk=bk;
-Net.SR=SR;
-Net.BR=BR;
-
-[~,NA,NE]=size(Net.B);
-
+NF=opt.NF;
+NE=opt.NE;
+NA=opt.NA;
 % check the constraints satisfaction
 % if not satisfy the 
 % while(1)
@@ -28,20 +19,35 @@ Net.BR=BR;
 %     end
 % end
 
+indicator=not(label==opt.unvalid);
+
 x=zeros(NF,NE);
-for ii=1:NF
-    if not(label(ii)==categorical(-1))
-        x(ii,label(ii))=1;
-    end
-end
+row=(1:NF).*indicator;
+row(row==0)=[];
+col=label.*indicator;
+col(col==0)=[];
+indices=sub2ind(size(x),row,col);
+x(indices)=1;
+% for ii=1:NF
+%     if indicator(ii)
+%         x(ii,label(ii))=1;
+%     end
+% end
 
 if opt.mode==0
     z=zeros(NF,NA,NE);
-    for ii=1:NF
-        if not(label(ii)==categorical(-1))
-            z(ii,Net.prob(ii,:)>0,label(ii))=1;
-        end
-    end
+    
+    Net.prob(indicator==0,:)=0;
+    [ind1,ind2]=find(Net.prob);
+    ind3=label(ind1);
+    indices=sub2ind(size(z),ind1,ind2,ind3');
+    z(indices)=1;
+%     for ii=1:NF
+%          if indicator(ii)
+%             z(ii,Net.prob(ii,:)>0,label(ii))=1;
+%          end
+%     end
+    opt.z=z;
 else
    z=opt.z;
 end
@@ -64,7 +70,7 @@ cost=Net.alpha*sum(x*te')+...
     Net.gamma*sum((1-sum(sum(probability_z.*z,3),2))*Net.hoptotal);
 
 delta=20;
-[linkValue,link_flag]=linkPenalty(label, Net, opt);
+[linkValue,link_flag]=linkPenalty(Net, opt);
 cost=cost+delta*linkValue;
 % cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(label,Net,opt));
 

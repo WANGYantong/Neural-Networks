@@ -1,19 +1,18 @@
-function [linkValue,link_flag]=linkPenalty(label, Net, opt)
+function [linkValue,link_flag]=linkPenalty(Net, opt)
 
-NF=length(label);
-[NL,NA,NE]=size(Net.B);
+NF=opt.NF;
+NL=opt.NL;
 
 if opt.mode==0
-    z=zeros(NF,NA,NE);
-    for ii=1:NF
-        if not(label(ii)==categorical(-1))
-            z(ii,Net.prob(ii,:)>0,label(ii))=1;
-        end
-    end
+    z=opt.z;
     y=zeros(NF,NL);
-    for ii=1:NF
-        for jj=1:NL
-            if(sum(Net.B(jj,:,:).*z(ii,:,:),'all')>0)
+    for jj=1:NL
+        [ind1,ind2]=find(opt.B_fold{jj});
+        if isempty(ind1)
+            continue;
+        end
+        for ii=1:NF
+            if any(z(ii,ind1,ind2),'all')
                 y(ii,jj)=1;
             end
         end
