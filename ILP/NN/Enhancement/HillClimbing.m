@@ -36,8 +36,14 @@ while(1)
  
     for ii=1:NF
         [succ_state{ii},update]=FindSucc(init_state,scoreRe(ii,:),succ_index(ii),ii);
+        
+%         succ_state{ii}'
+        
         if update==1
             succ_score(ii)=valueCalculator(Net,succ_state{ii},opt);
+            
+%             succ_score(ii)
+            
         else
             succ_score(ii)=init_score;
         end

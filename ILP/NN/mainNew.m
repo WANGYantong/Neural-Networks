@@ -105,6 +105,32 @@ end
 hill_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
 hill_time=testing_time+climbing_time;
 
+%%
+alloc_HC2=cell(NUMTEST,1);
+value_HC2=zeros(NUMTEST,1);
+
+climbing_clock2=tic;
+for ii=1:NUMTEST
+    [buff_HC,value_HC2(ii)]=HillClimbing2(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    alloc_HC2{ii}=buff_HC';
+end
+climbing_time2=toc(climbing_clock2);
+climbing_time2=climbing_time2/NUMTEST;
+disp('hill climbing2 finished');
+
+alloc_hill2=[alloc_HC2{1:NUMTEST}]';
+
+counter=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter(ii)=sum(alloc_hill2(ii,:)==categorical(imgLabelsTest(ii,:)));
+end
+counter_NF2=zeros(NF,1);
+for ii=1:(NF+1)
+    counter_NF2(ii)=sum(counter==ii-1);
+end
+
+hill_accuracy2=(0:NF)*counter_NF2/(NF*NUMTEST);
+hill_time2=testing_time+climbing_time2;
 %% sub MILP resolving
 result_sM=cell(NUMTEST,1);
 alloc_sM=cell(NUMTEST,1);
