@@ -18,12 +18,12 @@ while(1)
     for ii=1:NF
         [succ_state{ii},update]=FindSucc2(init_state,scoreRe(ii,:),succ_index(ii),ii);
         
-        succ_state{ii}'
+%         succ_state{ii}'
         
         if update==1
             succ_score(ii)=valueCalculator2(img,succ_state{ii},opt);
             
-            succ_score(ii)'
+%             succ_score(ii)'
             
         else
             succ_score(ii)=init_score;

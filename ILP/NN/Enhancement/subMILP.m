@@ -5,7 +5,7 @@ function result = subMILP(img,labelOriginal,score)
 NF=length(labelOriginal);
 NE=length(score)/NF;
 scoreRe=reshape(score,[NE,NF])';
-scoreRe(scoreRe>1e-4)=1;
+scoreRe(scoreRe>=1e-4)=1;
 scoreRe=round(scoreRe);
 
 %% unzip data for MILP
@@ -103,7 +103,7 @@ ProCach.Constraints.Constr12=t_constraint;
 ProCach.Constraints.Constr13=CNN_constraint;
 
 %% optimal solver
-opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*8);
+opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*12);
 
 tic;
 [sol,fval,exitflag,output]=solve(ProCach,'Options',opts);

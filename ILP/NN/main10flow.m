@@ -19,9 +19,10 @@ imgDataTrain=img.imgData(:,:,:,1:training_size);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=categorical(lab.imgLabels(1:training_size,:));
 
-imgDataTest=img.imgData(:,:,:,7001:7100);
-imgLabelsTest=categorical(lab.imgLabels(7001:7100,:));
-NUMTEST=size(imgLabelsTest,1);
+testing_range=9001:9100;
+imgDataTest=img.imgData(:,:,:,testing_range);
+imgLabelsTest=categorical(lab.imgLabels(testing_range,:));
+NUMTEST=length(testing_range);
 
 %% training CNN
 layers=[
@@ -78,18 +79,19 @@ for jj=1:length(testing_accuracy)
     testing_accuracy(jj)=ErrorCalc(imgLabelsTest, score, opt);
 end
 
-%% Hill Climbing Algorithm
+%% CNN+Hill Climbing
+% value_hill, alloc_hill, accuracy_hill, time_hill
 alloc_HC=cell(NUMTEST,1);
-value_HC=zeros(NUMTEST,1);
+value_hill=zeros(NUMTEST,1);
 
 climbing_clock=tic;
 for ii=1:NUMTEST
-    [buff_HC,value_HC(ii)]=HillClimbing(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
+    [buff_HC,value_hill(ii)]=HillClimbing(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
     alloc_HC{ii}=buff_HC';
 end
 climbing_time=toc(climbing_clock);
 climbing_time=climbing_time/NUMTEST;
-disp('hill climbing finished');
+disp('CNN+Hill Climbing finished');
 
 alloc_hill=[alloc_HC{1:NUMTEST}]';
 
@@ -102,49 +104,24 @@ for ii=1:(NF+1)
     counter_NF(ii)=sum(counter==ii-1);
 end
 
-hill_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
-hill_time=testing_time+climbing_time;
+accuracy_hill=(0:NF)*counter_NF/(NF*NUMTEST);
+time_hill=testing_time+climbing_time;
 
-%%
-alloc_HC2=cell(NUMTEST,1);
-value_HC2=zeros(NUMTEST,1);
-
-climbing_clock2=tic;
-for ii=1:NUMTEST
-    [buff_HC,value_HC2(ii)]=HillClimbing2(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
-    alloc_HC2{ii}=buff_HC';
-end
-climbing_time2=toc(climbing_clock2);
-climbing_time2=climbing_time2/NUMTEST;
-disp('hill climbing2 finished');
-
-alloc_hill2=[alloc_HC2{1:NUMTEST}]';
-
-counter=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    counter(ii)=sum(alloc_hill2(ii,:)==categorical(imgLabelsTest(ii,:)));
-end
-counter_NF2=zeros(NF,1);
-for ii=1:(NF+1)
-    counter_NF2(ii)=sum(counter==ii-1);
-end
-
-hill_accuracy2=(0:NF)*counter_NF2/(NF*NUMTEST);
-hill_time2=testing_time+climbing_time2;
-%% sub MILP resolving
+%% CNN+sub MILP resolving
+% value_sub, alloc_sub, accuracy_sub, time_sub
 result_sM=cell(NUMTEST,1);
 alloc_sM=cell(NUMTEST,1);
-value_sM=zeros(NUMTEST,1);
+value_sub=zeros(NUMTEST,1);
 
 subM_clock=tic;
 for ii=1:NUMTEST
     result_sM{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
     alloc_sM{ii}=result_sM{ii}.allocations;
-    value_sM(ii)=result_sM{ii}.fval;
+    value_sub(ii)=result_sM{ii}.fval;
 end
 subM_time=toc(subM_clock);
 subM_time=subM_time/NUMTEST;
-disp('sub MILP finished');
+disp('CNN+sub MILP finished');
 
 alloc_sub=[alloc_sM{1:NUMTEST}]';
 
@@ -157,5 +134,50 @@ for ii=1:(NF+1)
     counter_NF(ii)=sum(counter==ii-1);
 end
 
-sub_accuracy=(0:NF)*counter_NF/(NF*NUMTEST);
-sub_time=testing_time+subM_time;
+accuracy_sub=(0:NF)*counter_NF/(NF*NUMTEST);
+time_sub=testing_time+subM_time;
+
+%% Greedy Algorithm
+% value_greedy, alloc_greedy, accuracy_greedy, time_greedy
+result_G=cell(NUMTEST,1);
+alloc_G=cell(NUMTEST,1);
+value_greedy=zeros(NUMTEST,1);
+
+G_clock=tic;
+for ii=1:NUMTEST
+    result_G{ii}=Greedy(imgDataTest(:,:,:,ii));
+    alloc_G{ii}=result_G{ii}.allocations;
+    value_greedy(ii)=result_G{ii}.value;
+end
+G_time=toc(G_clock);
+time_greedy=G_time/NUMTEST;
+disp('Greedy finished');
+
+alloc_greedy=[alloc_G{1:NUMTEST}]';
+
+counter=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    counter(ii)=sum(alloc_greedy(ii,:)==categorical(imgLabelsTest(ii,:)));
+end
+counter_NF=zeros(NF,1);
+for ii=1:(NF+1)
+    counter_NF(ii)=sum(counter==ii-1);
+end
+
+accuracy_greedy=(0:NF)*counter_NF/(NF*NUMTEST);
+
+%% Benchmark
+% value_bench, alloc_bench, time_bench
+sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
+value_bench=zeros(NUMTEST,1);
+alloc_bench=imgLabelsTest;
+time_bench=zeros(NUMTEST,1);
+
+for ii=1:NUMTEST
+    result_bench=sol.result{testing_range(ii)};
+    value_bench(ii)=result_bench.fval;
+    time_bench(ii)=result_bench.time;
+end
+disp('Benchmark loaded');
+
+time_bench=mean(time_bench);
