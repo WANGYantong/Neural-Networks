@@ -10,13 +10,17 @@ labfile=['../DataStore/flow',num2str(NF),'/imgLabels_',num2str(layout.image_layo
 img=load(imgfile);
 lab=load(labfile);
 
-imgDataTrain=img.imgData(:,:,:,1:training_size);
+off_load=256;
+training_scale=off_load+1:off_load+training_size;
+imgDataTrain=img.imgData(:,:,:,training_scale);
 inputSize=size(imgDataTrain);
-imgLabelsTrain=categorical(lab.imgLabels(1:training_size,:));
+imgLabelsTrain=categorical(lab.imgLabels(training_scale,:));
 
-imgDataTest=img.imgData(:,:,:,7001:7100);
-imgLabelsTest=categorical(lab.imgLabels(7001:7100,:));
-NUMTEST=size(imgLabelsTest,1);
+off_load=0;
+testing_scale=off_load+1:off_load+256;
+imgDataTest=img.imgData(:,:,:,testing_scale);
+imgLabelsTest=categorical(lab.imgLabels(testing_scale,:));
+NUMTEST=length(testing_scale);
 
 %% CNN structure
 layer=cell(10,1);

@@ -15,11 +15,14 @@ img=load(imgfile);
 lab=load(labfile);
 
 training_size=1024;
-imgDataTrain=img.imgData(:,:,:,1:training_size);
+off_load=256;
+training_range=off_load+1:off_load+training_size;
+imgDataTrain=img.imgData(:,:,:,training_range);
 inputSize=size(imgDataTrain);
-imgLabelsTrain=categorical(lab.imgLabels(1:training_size,:));
+imgLabelsTrain=categorical(lab.imgLabels(training_range,:));
 
-testing_range=9001:9100;
+off_load=0;
+testing_range=off_load+1:off_load+256;
 imgDataTest=img.imgData(:,:,:,testing_range);
 imgLabelsTest=categorical(lab.imgLabels(testing_range,:));
 NUMTEST=length(testing_range);
