@@ -91,9 +91,19 @@ result.fval=fval;
 result.exitflag=exitflag;
 result.output=output;
 
-[s1,t1]=find(round(sol.x));
+t1=zeros(NF,1);
+for ii=1:NF
+    [~,pos]=find(round(sol.x(ii,:)));
+    if isempty(pos)
+        t1(ii)=0;
+    else
+        t1(ii)=pos;
+    end
+end
 
-[~,II]=sort(s1);
-result.allocations=t1(II);
+% [s1,t1]=find(round(sol.x));
+
+% [~,II]=sort(s1);
+result.allocations=t1;
 
 end

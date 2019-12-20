@@ -11,7 +11,7 @@ scoreRe=round(scoreRe);
 %% unzip data for MILP
 Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [Net.prob,Net.sk,Net.bk,Net.SR,Net.BR]=imageDecoding(img);
-Net.M=1000;
+Net.M=1e6;
 
 [NL,NA,~]=size(Net.B);
 

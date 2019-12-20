@@ -10,17 +10,27 @@ Net.bk=bk;
 Net.SR=SR;
 Net.BR=BR;
 
-list_EC=categorical(FindEcForFlow(Net));
-solution=list_EC(:,1);
+[opt.NL,opt.NA,opt.NE]=size(Net.B);
+opt.mode=0;
+opt.NF=NF;
+opt.unvalid=-1;
+B_fold=cell(opt.NL,1);
+for ii=1:opt.NL
+    B_fold{ii}=squeeze(Net.B(ii,:,:));
+end
+opt.B_fold=B_fold;
+
+list_EC=FindEcForFlow(Net);
+allocations=list_EC(:,1);
 pointer=ones(NF,1); % position indicator
 
 while(1)
-    [spaceValue,label]=spacePenalty(solution,Net);
+    [spaceValue,label]=spacePenalty(allocations,Net,opt);
     
     if spaceValue>0
-        pos=find(label==categorical(-1));
+        pos=find(label==opt.unvalid);
         pointer(pos)=pointer(pos)+1;
-        solution(pos)=list_EC(pos,pointer(pos));
+        allocations(pos)=list_EC(pos,pointer(pos));
     else
         break;
     end
@@ -30,5 +40,8 @@ while(1)
     end
     
 end
+
+solution.allocations=categorical(allocations);
+solution.value=valueCalculator(Net,allocations',opt);
 
 end
