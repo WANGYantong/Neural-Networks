@@ -1,7 +1,7 @@
 clear
 clc
 
-NF=5:5:20;
+NF=20:-5:5;
 
 for ii=1:length(NF)
     FlowCase(NF(ii));
