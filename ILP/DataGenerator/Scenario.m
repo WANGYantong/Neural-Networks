@@ -1,4 +1,4 @@
-function [para,data] = Scenario(flow)
+function [para,data] = Scenario(HARDCORE)
 
 %% topology
 [G,EdgeCloud,NormalRouter,AccessRouter,vertice_names]=SetNetTopo();
@@ -15,9 +15,7 @@ beta=1;
 % cache miss penalty
 gamma=1;
 
-NF=length(flow);
-
-NUMINDEX=1024+256;
+NUMINDEX=1024+256+256;
 
 % # of hops from AR to EC
 hopcounter=zeros(length(AccessRouter),length(EdgeCloud));
@@ -38,9 +36,6 @@ B=GetPathLinkRel(G,"undirected",path,length(AccessRouter),length(EdgeCloud));
 % surfficiently large number
 M=1e6;
 
-save(['../DataStore/flow',num2str(flow(end)),'/network.mat'],'alpha','beta','gamma','hopcounter','hoptotal','B','G',...
-    'EdgeCloud','AccessRouter');
-
 para.graph=G;
 para.EdgeCloud=EdgeCloud;
 para.AccessRouter=AccessRouter;
@@ -51,11 +46,9 @@ data=cell(NUMINDEX,1);
     
 rng(1);
 
-HARDCORE=20;
-
 for index=1:NUMINDEX
     % moving probability
-    [probability,start_point]=SetMovProb(HARDCORE,length(AccessRouter));
+    [probability,start_points]=SetMovProb(HARDCORE,length(AccessRouter));
     % space requirement of flow
     %     spaceK=randi([0,5],size(flow))*10+45;
     spaceK=randi([1,15],1,HARDCORE)*10;
@@ -72,19 +65,18 @@ for index=1:NUMINDEX
 
 
     % packing parameters
-    data{index}.flow=flow;
     data{index}.alpha=alpha;
     data{index}.beta=beta;
     data{index}.gamma=gamma;
-    data{index}.probability=probability(1:NF,:);
-    data{index}.startPoint=start_point(1:NF,:);
+    data{index}.probability=probability;
+    data{index}.startPoints=start_points;
     data{index}.hopcounter=hopcounter;
     data{index}.path=path;
     data{index}.hoptotal=hoptotal;
-    data{index}.spaceK=spaceK(1:NF);
+    data{index}.spaceK=spaceK;
     data{index}.spaceR=spaceR;
     data{index}.spaceT=spaceT;
-    data{index}.bandwidthK=bandwidthK(1:NF);
+    data{index}.bandwidthK=bandwidthK;
     data{index}.bandwidthR=bandwidthR;
     data{index}.bandwidthT=bandwidthT;
     data{index}.B=B;
