@@ -51,10 +51,10 @@ for index=1:NUMINDEX
     [probability,start_points]=SetMovProb(HARDCORE,length(AccessRouter));
     % space requirement of flow
     %     spaceK=randi([0,5],size(flow))*10+45;
-    spaceK=randi([1,15],1,HARDCORE)*10;
+    spaceK=[randi([10,20],1,HARDCORE/2)*10,randi([1,10],1,HARDCORE/2)*10];
     % available space in EC
-    spaceR=[randi([7,8],size(EdgeCloud(1:3)))*50+101,randi([1,6],size(EdgeCloud(4:end)))*50+101];
-%     spaceR=[ones(size(EdgeCloud(1:2)))*400+101,randi([1,2],size(EdgeCloud(3:end)))*100+51];  
+%     spaceR=[randi([6,8],size(EdgeCloud(1:3)))*50+101,randi([1,5],size(EdgeCloud(4:end)))*50+101];
+    spaceR=[ones(size(EdgeCloud(1:3)))*400+101,randi([1,2],size(EdgeCloud(4:end)))*150+51];  
     % bandwidth requirement of flow
     %     bandwidthK=randi([0,2],size(flow))*5+5;
     bandwidthK=randi([1,15],1,HARDCORE);

@@ -103,7 +103,7 @@ ProCach.Constraints.Constr12=t_constraint;
 ProCach.Constraints.Constr13=CNN_constraint;
 
 %% optimal solver
-opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*12);
+opts=optimoptions('intlinprog','Display','off','Heuristics','none','MaxTime',3600*12);
 
 tic;
 [sol,fval,exitflag,output]=solve(ProCach,'Options',opts);

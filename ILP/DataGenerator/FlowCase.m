@@ -8,7 +8,7 @@ NUMINDEX=1024+256+256;
 
 alpha=data{1}.alpha;
 beta=data{1}.beta;
-gamma=data{2}.gamma;
+gamma=data{1}.gamma;
 hopcounter=data{1}.hopcounter;
 hoptotal=data{1}.hoptotal;
 B=data{1}.B;
@@ -37,7 +37,7 @@ parfor index=1:NUMINDEX %NUMINDEX
     
     data{index}.flow=flow;
     data{index}.probability=data{index}.probability(1:NF,:);
-    data{index}.startPoint=data{index}.startPoints(1:NF,:);
+    data{index}.startPoints=data{index}.startPoints(1:NF,:);
     data{index}.spaceK=data{index}.spaceK(1:NF);
     data{index}.bandwidthK=data{index}.bandwidthK(1:NF);
     
