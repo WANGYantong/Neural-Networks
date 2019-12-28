@@ -15,13 +15,18 @@ img=load(imgfile);
 lab=load(labfile);
 
 training_size=1024;
-off_load=256;
+off_load=0;
 training_range=off_load+1:off_load+training_size;
 imgDataTrain=img.imgData(:,:,:,training_range);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=categorical(lab.imgLabels(training_range,:));
 
-off_load=0;
+off_load=1024;
+validation_range=off_load+1:off_load+256;
+imgDataValid=img.imgData(:,:,:,validation_range);
+imgLabelsValid=categorical(lab.imgLabels(validation_range,:));
+
+off_load=1024+256;
 testing_range=off_load+1:off_load+256;
 imgDataTest=img.imgData(:,:,:,testing_range);
 imgLabelsTest=categorical(lab.imgLabels(testing_range,:));
@@ -42,19 +47,23 @@ layers=[
 batch_size=64;
 epoch_size=10;
 learning_rate=1e-3;
-options = trainingOptions( 'adam',...
-    'ExecutionEnvironment','auto',...
-    'MiniBatchSize', batch_size,...
-    'MaxEpochs', epoch_size, ...
-    'InitialLearnRate',learning_rate,...
-    'Verbose',true);
-%     'Plots','training-progress');
+for ii=1:NF
+    options(ii) = trainingOptions( 'adam',...
+        'ExecutionEnvironment','auto',...
+        'MiniBatchSize', batch_size,...
+        'MaxEpochs', epoch_size, ...
+        'InitialLearnRate',learning_rate,...
+        'ValidationData',{imgDataValid,imgLabelsValid(:,ii)},...
+        'ValidationFrequency',16,...
+        'Verbose',true,...
+        'Plots','training-progress');
+end
 
 net = cell(NF,1);
 trainInfo = cell(NF,1);
 training_clock=tic;
 for ii=1:NF
-    [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, imgLabelsTrain(:,ii), layers, options);
+    [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, imgLabelsTrain(:,ii), layers, options(ii));
 end
 training_time=toc(training_clock);
 training_time=training_time/NF;
