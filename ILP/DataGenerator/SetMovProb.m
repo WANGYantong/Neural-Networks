@@ -9,27 +9,27 @@ for ii=1:NF
     start_point(ii,base)=1;
     if rand()>=0.5 % high moving desire
         if label==1
-            probability(ii,base+1)=0.1*rand()+0.8;
+            probability(ii,base+1)=0.3*rand()+0.6;
             probability(ii,base)=probability(ii,base)-probability(ii,base+1);
         elseif label==3
-            probability(ii,base-1)=0.1*rand()+0.8;
+            probability(ii,base-1)=0.3*rand()+0.6;
             probability(ii,base)=probability(ii,base)-probability(ii,base-1);
         else
-            probability(ii,base-1)=0.05*rand()+0.4;
-            probability(ii,base+1)=0.05*rand()+0.4;
+            probability(ii,base-1)=0.1*rand()+0.35;
+            probability(ii,base+1)=0.1*rand()+0.35;
             probability(ii,base)=probability(ii,base)...
                 -probability(ii,base-1)-probability(ii,base+1);
         end
     else
         if label==1
-            probability(ii,base+1)=0.09*rand()+0.01;
+            probability(ii,base+1)=0.2*rand()+0.2;
             probability(ii,base)=probability(ii,base)-probability(ii,base+1);
         elseif label==3
-            probability(ii,base-1)=0.09*rand()+0.01;
+            probability(ii,base-1)=0.2*rand()+0.2;
             probability(ii,base)=probability(ii,base)-probability(ii,base-1);
         else
-            probability(ii,base-1)=0.09*rand()+0.01;
-            probability(ii,base+1)=0.09*rand()+0.01;
+            probability(ii,base-1)=0.1*rand()+0.15;
+            probability(ii,base+1)=0.1*rand()+0.15;
             probability(ii,base)=probability(ii,base)...
                 -probability(ii,base-1)-probability(ii,base+1);
         end

@@ -6,6 +6,7 @@ NA=length(para.AccessRouter);
 NE=length(para.EdgeCloud);
 
 %% decision variables
+tic;
 x=optimvar('x',NF,NE,'Type','integer','LowerBound',0,'UpperBound',1);
 y=optimvar('y',NF,NL,'Type','integer','LowerBound',0,'UpperBound',1);
 z=optimvar('z',NF,NA,NE,'Type','integer','LowerBound',0,'UpperBound',1);
@@ -14,7 +15,7 @@ t=optimvar('t',NE,'LowerBound',0);
 phi=optimvar('phi',NF,NE,'LowerBound',0);
 
 %% constraints
-cache_num_constraint=sum(x,2)<=1;   
+cache_num_constraint=sum(x,2)==1;   
 
 space_size_constraint=data.spaceK*x<=data.spaceR;
 
@@ -75,8 +76,9 @@ ProCach.Constraints.Constr12=t_constraint;
 
 %% optimal solver
 opts=optimoptions('intlinprog','Display','off','Heuristics','none','MaxTime',3600*12);
+% opts=optimoptions('intlinprog','Display','off','Heuristics','advanced','MaxTime',3600*12);
 
-tic;
+
 [sol,fval,exitflag,output]=solve(ProCach,'Options',opts);
 running_time=toc;
 

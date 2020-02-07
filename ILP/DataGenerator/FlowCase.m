@@ -3,8 +3,11 @@ function FlowCase(NF,para,data)
 %% load scenario
 % ID of mobile users
 flow=1:NF;
-
-NUMINDEX=1024+256+256;
+if NF==5
+    NUMINDEX=128+128+1024;
+else
+    NUMINDEX=128;
+end
 
 alpha=data{1}.alpha;
 beta=data{1}.beta;

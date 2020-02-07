@@ -1,4 +1,4 @@
-function [G,EdgeCloud,NormalRouter,AccessRouter,vertice_name] = SetNetTopo()
+function [G,EdgeCloud,NormalRouter,AccessRouter,vertice_name] = SetNetTopo2()
 
 vertice_name={'GW','R1','R2','EC1','EC2','EC3','EC4','EC5','EC6','EC7',...
     'AR1','AR2','AR3','AR4','AR5','AR6','AR7'};

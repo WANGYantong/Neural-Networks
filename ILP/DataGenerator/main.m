@@ -9,3 +9,4 @@ HARDCORE=20;
 for ii=1:length(NF)
     FlowCase(NF(ii),para,data);
 end
+

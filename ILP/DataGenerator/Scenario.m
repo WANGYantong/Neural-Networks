@@ -1,7 +1,7 @@
 function [para,data] = Scenario(HARDCORE)
 
 %% topology
-[G,EdgeCloud,NormalRouter,AccessRouter,vertice_names]=SetNetTopo();
+[G,EdgeCloud,NormalRouter,AccessRouter,vertice_names]=SetNetTopo1();
 N=length(vertice_names);
 for v=1:N
     eval([vertice_names{v},'=',num2str(v),';']);
@@ -15,7 +15,7 @@ beta=1;
 % cache miss penalty
 gamma=1;
 
-NUMINDEX=1024+256+256;
+NUMINDEX=128+128+1024;
 
 % # of hops from AR to EC
 hopcounter=zeros(length(AccessRouter),length(EdgeCloud));
@@ -47,21 +47,23 @@ data=cell(NUMINDEX,1);
 rng(1);
 
 for index=1:NUMINDEX
+%     rng(index);
     % moving probability
     [probability,start_points]=SetMovProb(HARDCORE,length(AccessRouter));
     % space requirement of flow
-    %     spaceK=randi([0,5],size(flow))*10+45;
-    spaceK=[randi([10,20],1,HARDCORE/2)*10,randi([1,10],1,HARDCORE/2)*10];
+    spaceK=randi([1,20],1,HARDCORE)*5;
+%     spaceK=[randi([10,20],1,HARDCORE/2)*10,randi([5,15],1,HARDCORE/2)*10];
     % available space in EC
-%     spaceR=[randi([6,8],size(EdgeCloud(1:3)))*50+101,randi([1,5],size(EdgeCloud(4:end)))*50+101];
-    spaceR=[ones(size(EdgeCloud(1:3)))*400+101,randi([1,2],size(EdgeCloud(4:end)))*150+51];  
+%     spaceR=[randi([6,8],size(EdgeCloud(1:2)))*50+100,randi([1,5],size(EdgeCloud(3:end)))*50+100];
+%     spaceR=[ones(size(EdgeCloud(1:2)))*400+101,randi([1,4],size(EdgeCloud(3:end)))*100+51];  
+    spaceR=[randi([4,5],size(EdgeCloud(1:2)))*100+51,randi([3,5],size(EdgeCloud(3:end)))*50+51];
     % bandwidth requirement of flow
-    %     bandwidthK=randi([0,2],size(flow))*5+5;
-    bandwidthK=randi([1,15],1,HARDCORE);
+%     bandwidthK=randi([0,2],1,HARDCORE)*5+5;
+    bandwidthK=randi([1,8],1,HARDCORE)*5;
     % available bandwidth in link
-    %     bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
+%     bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
 %     bandwidthR=randi([1,6],size(G.Edges.Weight))*10+40;
-    bandwidthR=ones(size(G.Edges.Weight))*80;
+    bandwidthR=ones(size(G.Edges.Weight))*100;
 
 
     % packing parameters
