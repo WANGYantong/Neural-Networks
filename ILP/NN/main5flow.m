@@ -5,7 +5,7 @@ clc
 addpath(genpath(pwd));
 
 %% load dataset
-flow=1:10;
+flow=1:5;
 NF=length(flow);
 
 layout=load(['../DataStore/flow',num2str(NF),'/layout.mat']);
@@ -15,28 +15,29 @@ img=load(imgfile);
 lab=load(labfile);
 
 training_size=1024;
+
 off_load=0;
+testing_range=off_load+1:off_load+128;
+imgDataTest=img.imgData(:,:,:,testing_range);
+imgLabelsTest=categorical(lab.imgLabels(testing_range,:));
+NUMTEST=length(testing_range);
+
+off_load=testing_range(end);
+validation_range=off_load+1:off_load+128;
+imgDataValid=img.imgData(:,:,:,validation_range);
+imgLabelsValid=categorical(lab.imgLabels(validation_range,:));
+
+off_load=validation_range(end);
 training_range=off_load+1:off_load+training_size;
 imgDataTrain=img.imgData(:,:,:,training_range);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=categorical(lab.imgLabels(training_range,:));
 
-off_load=1024;
-validation_range=off_load+1:off_load+256;
-imgDataValid=img.imgData(:,:,:,validation_range);
-imgLabelsValid=categorical(lab.imgLabels(validation_range,:));
-
-off_load=1024+256;
-testing_range=off_load+1:off_load+256;
-imgDataTest=img.imgData(:,:,:,testing_range);
-imgLabelsTest=categorical(lab.imgLabels(testing_range,:));
-NUMTEST=length(testing_range);
-
 %% training CNN
 layers=[
     imageInputLayer(inputSize(1:3))
     
-    convolution2dLayer(3,16,'Padding','same')
+    convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
     reluLayer
 
@@ -45,25 +46,23 @@ layers=[
     classificationLayer];
 
 batch_size=64;
-epoch_size=10;
+epoch_size=30;
 learning_rate=1e-3;
-for ii=1:NF
-    options(ii) = trainingOptions( 'adam',...
+
+options = trainingOptions(  'sgdm',...
         'ExecutionEnvironment','auto',...
         'MiniBatchSize', batch_size,...
         'MaxEpochs', epoch_size, ...
+        'Shuffle','every-epoch',...
         'InitialLearnRate',learning_rate,...
-        'ValidationData',{imgDataValid,imgLabelsValid(:,ii)},...
-        'ValidationFrequency',16,...
+        'L2Regularization',0.0005,...
         'Verbose',true,...
         'Plots','training-progress');
-end
 
 net = cell(NF,1);
-trainInfo = cell(NF,1);
 training_clock=tic;
 for ii=1:NF
-    [net{ii},trainInfo{ii}] = trainNetwork(imgDataTrain, imgLabelsTrain(:,ii), layers, options(ii));
+    net{ii} = trainNetwork(imgDataTrain, imgLabelsTrain(:,ii), layers, options);
 end
 training_time=toc(training_clock);
 training_time=training_time/NF;
@@ -83,6 +82,47 @@ scoreTest=[score{1:NF}];
 testing_time=toc(testing_clock);
 testing_time=testing_time/NUMTEST;
 
+%% Benchmark
+sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
+
+% computation time & mean_TC
+time_MILP=zeros(NUMTEST,1);
+TC_MILP=zeros(NUMTEST,1);
+for ii=1:NUMTEST
+    result_bench=sol.result{testing_range(ii)};
+    TC_MILP(ii)=result_bench.fval;
+    time_MILP(ii)=result_bench.time;
+end
+
+time_MILP=mean(time_MILP);
+TC_MILP=mean(TC_MILP);
+
+% # of decision variables
+Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
+[NL,NA,NE]=size(Net.B);
+
+numerDV_MILP=NF*NE+NF*NL+NF*NA*NE+NE+NF*NE;
+%% pure-CNN
+
+% computation time
+time_pure=testing_time;
+
+% mean TC & feasible ratio
+TC_pure=zeros(NUMTEST,1);
+feasible_pure=TC_pure;
+for ii=1:NUMTEST
+    [TC_pure(ii),feasible_pure(ii)]=TCcalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));
+end
+
+% max TC diff
+
+% accuracy
+
+% precision
+
+% recall
+
+% F1-score
 testing_accuracy=zeros(6,1);
 opt.NF=NF;
 opt.NT=NUMTEST;
@@ -91,7 +131,7 @@ for jj=1:length(testing_accuracy)
     testing_accuracy(jj)=ErrorCalc(imgLabelsTest, score, opt);
 end
 
-%% CNN+Hill Climbing
+%% CNN+HCLS
 % value_hill, alloc_hill, accuracy_hill, time_hill
 alloc_HC=cell(NUMTEST,1);
 value_hill=zeros(NUMTEST,1);
@@ -119,7 +159,7 @@ end
 accuracy_hill=(0:NF)*counter_NF/(NF*NUMTEST);
 time_hill=testing_time+climbing_time;
 
-%% CNN+sub MILP resolving
+%% CNN-MILP 
 % value_sub, alloc_sub, accuracy_sub, time_sub
 result_sM=cell(NUMTEST,1);
 alloc_sM=cell(NUMTEST,1);
@@ -177,19 +217,3 @@ for ii=1:(NF+1)
 end
 
 accuracy_greedy=(0:NF)*counter_NF/(NF*NUMTEST);
-
-%% Benchmark
-% value_bench, alloc_bench, time_bench
-sol=load(['../DataStore/flow',num2str(flow(end)),'/solutions.mat']);
-value_bench=zeros(NUMTEST,1);
-alloc_bench=imgLabelsTest;
-time_bench=zeros(NUMTEST,1);
-
-for ii=1:NUMTEST
-    result_bench=sol.result{testing_range(ii)};
-    value_bench(ii)=result_bench.fval;
-    time_bench(ii)=result_bench.time;
-end
-disp('Benchmark loaded');
-
-time_bench=mean(time_bench);

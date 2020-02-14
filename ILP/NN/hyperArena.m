@@ -138,41 +138,51 @@ end
 % validation_loss_plot=squeeze(mean(validation_loss));
 % testing_accuracy_plot=squeeze(mean(testing_accuracy));
 
-% epoch_plot=epoch_size;
-% line_style1={'-o','-s','-d','-^','-p','-*'};
-% line_style2={':o',':s',':d',':^',':p',':*'};
-% color_style={[0.1,0.1,0.1],[0.2,0.2,0.2],[0.3,0.3,0.3],...
-%     [0.4,0.4,0.4],[0.5,0.5,0.5],[0.5,0.5,0.5]};
-% 
-% figure(1);
-% hold on;
-% for jj=1:length(batch_size)
-%     plot(epoch_plot,training_loss_plot(jj,:),line_style1{jj},'Color',color_style{jj},'LineWidth',2,'MarkerSize',16);
-% end
-% xlabel('Epoch','FontSize',24);
-% ylabel('Loss Function','FontSize',24);
-% xlim([epoch_plot(1),epoch_plot(end)]);
-% % ylim([0.2,1]);
-% lgd=legend({'16','32','64','256','1024'},'Location','north','NumColumns',5);
-% set(gca,'fontsize',24);
-% lgd.FontSize=24;
-% grid on;
-% hold off;
-% 
-% figure(2);
-% hold on;
-% for jj=1:length(batch_size)
-%     plot(epoch_plot,validation_loss_plot(jj,:),line_style2{jj},'Color',color_style{jj},'LineWidth',2,'MarkerSize',16);
-% end
-% xlabel('Epoch','FontSize',24);
-% ylabel('Loss Function','FontSize',24);
-% xlim([epoch_plot(1),epoch_plot(end)]);
-% % ylim([0.2,0.8]);
-% lgd=legend({'16','32','64','256','1024'},'Location','north','NumColumns',5);
-% set(gca,'fontsize',24);
-% lgd.FontSize=24;
-% grid on;
-% hold off;
+epoch_plot=epoch_size;
+line_style1={'-o','-s','-d','-^','-p','-*'};
+line_style2={':o',':s',':d',':^',':p',':*'};
+color_style={[0.1,0.1,0.1],[0.2,0.2,0.2],[0.3,0.3,0.3],...
+    [0.4,0.4,0.4],[0.5,0.5,0.5],[0.5,0.5,0.5]};
+
+figure(1);
+hold on;
+for jj=1:length(batch_size)
+    plot(epoch_plot,training_loss_plot(jj,:),line_style1{jj},'Color',color_style{jj},'LineWidth',2,'MarkerSize',16);
+end
+xlabel('Epoch','FontSize',24);
+ylabel('Loss Function','FontSize',24);
+xlim([epoch_plot(1),epoch_plot(end)]);
+% ylim([0.2,1]);
+lgd=legend({'16','32','64','256','1024'},'Location','north','NumColumns',5);
+set(gca,'fontsize',24);
+lgd.FontSize=24;
+grid on;
+hold off;
+
+figure(2);
+hold on;
+for jj=1:length(batch_size)
+    plot(epoch_plot,validation_loss_plot(jj,:),line_style2{jj},'Color',color_style{jj},'LineWidth',2,'MarkerSize',16);
+end
+xlabel('Epoch','FontSize',24);
+ylabel('Loss Function','FontSize',24);
+xlim([epoch_plot(1),epoch_plot(end)+1]);
+ylim([0.40,2]);
+lgd=legend({'16','32','64','256','1024'},'Location','north','NumColumns',5);
+set(gca,'fontsize',24);
+lgd.FontSize=24;
+grid on;
+hold off
+
+axes('Position',[0.68,0.5,0.2,0.3],'Box','on');
+range_ax=length(epoch_size)-2:length(epoch_size);
+hold on;
+for jj=1:length(batch_size)
+    plot(epoch_plot(range_ax),validation_loss_plot(jj,range_ax),line_style2{jj},...
+        'Color',color_style{jj},'LineWidth',2,'MarkerSize',16);
+end                                                                                                 
+ylim([0.45,0.75]);
+hold off;
 
 %% the effect of epoch
 

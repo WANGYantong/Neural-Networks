@@ -42,6 +42,6 @@ while(1)
 end
 
 solution.allocations=categorical(allocations);
-solution.value=valueCalculator(Net,allocations',opt);
+[solution.value,solution.ratio]=valueCalculator(Net,allocations',opt);
 
 end

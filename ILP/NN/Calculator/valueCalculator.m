@@ -1,4 +1,4 @@
-function cost = valueCalculator(Net,label,opt)
+function [cost,ratio] = valueCalculator(Net,label,opt)
 % opt for addtional decision variable y&z.
 % opt.mode=0: generate y&z depend on x
 % opt.mode=1: read y&z from external file
@@ -71,8 +71,11 @@ cost=Net.alpha*sum(x*te')+...
 
 delta=20;
 [linkValue,link_flag]=linkPenalty(Net, opt);
+% [spaceValue,space_flag]=spacePenalty(label,Net,opt);
 cost=cost+delta*linkValue;
-% cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(label,Net,opt));
+% flag=[link_flag space_flag];
+ratio=sum(link_flag)/length(link_flag);
+% cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(Net,opt));
 
 % cost=cost+gamma*(spacePenalty(label,Net));
 
