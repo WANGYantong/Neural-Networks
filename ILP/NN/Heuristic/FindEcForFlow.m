@@ -15,7 +15,7 @@ list_cost=zeros(NF,NE);
 
 for ii = 1:NF
     for jj = 1:NE
-        [~,path_cost]=shortestpath(Net.G,ar(ii),Net.EdgeCloud(jj));
+        [~,path_cost]=shortestpath(Net.graph,ar(ii),Net.EdgeCloud(jj));
         list_cost(ii,jj)=path_cost;
     end
 end

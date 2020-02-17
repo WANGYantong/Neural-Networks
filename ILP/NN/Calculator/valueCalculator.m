@@ -71,10 +71,10 @@ cost=Net.alpha*sum(x*te')+...
 
 delta=20;
 [linkValue,link_flag]=linkPenalty(Net, opt);
-% [spaceValue,space_flag]=spacePenalty(label,Net,opt);
-cost=cost+delta*linkValue;
-% flag=[link_flag space_flag];
-ratio=sum(link_flag)/length(link_flag);
+[spaceValue,space_flag,~]=spacePenalty(label,Net,opt);
+cost=cost+delta*(spaceValue+linkValue);
+flag=[link_flag space_flag];
+ratio=sum(flag)/length(flag);
 % cost=cost+delta*(spacePenalty(label,Net)+linkPenalty(Net,opt));
 
 % cost=cost+gamma*(spacePenalty(label,Net));

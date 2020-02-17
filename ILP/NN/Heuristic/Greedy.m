@@ -1,8 +1,8 @@
-function solution = Greedy(img)
+function solution = Greedy(img,Net)
 
 NF=size(img,1);
 
-Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
+% Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;
@@ -25,7 +25,7 @@ allocations=list_EC(:,1);
 pointer=ones(NF,1); % position indicator
 
 while(1)
-    [spaceValue,label]=spacePenalty(allocations,Net,opt);
+    [spaceValue,~,label]=spacePenalty(allocations,Net,opt);
     
     if spaceValue>0
         pos=find(label==opt.unvalid);

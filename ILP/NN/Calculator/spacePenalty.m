@@ -1,4 +1,4 @@
-function [spaceValue,label]=spacePenalty(label, Net, opt)
+function [spaceValue,flow_flag,label]=spacePenalty(label, Net, opt)
 
 NF=length(label);
 NE=size(Net.hopcounter,2);

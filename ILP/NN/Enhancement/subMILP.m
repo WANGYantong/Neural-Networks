@@ -1,15 +1,14 @@
-function result = subMILP(img,labelOriginal,score)
+function result = subMILP(img,labelOriginal,score,Net)
 % call MILP after compression
 
 %% generate one more bound for decision variable x
 NF=length(labelOriginal);
 NE=length(score)/NF;
 scoreRe=reshape(score,[NE,NF])';
-scoreRe(scoreRe>=1e-4)=1;
+scoreRe(scoreRe>=1e-3)=1;
 scoreRe=round(scoreRe);
 
 %% unzip data for MILP
-Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [Net.prob,Net.sk,Net.bk,Net.SR,Net.BR]=imageDecoding(img);
 Net.M=1e6;
 
@@ -30,7 +29,7 @@ t=optimvar('t',NE,'LowerBound',0);
 phi=optimvar('phi',NF,NE,'LowerBound',0);
 
 % constraints 
-cache_num_constraint=sum(x,2)<=1;   
+cache_num_constraint=sum(x,2)==1;   
 
 if any(Net.SR) || any(Net.BR)
     s_x=repmat(Net.sk,[1,NE]);

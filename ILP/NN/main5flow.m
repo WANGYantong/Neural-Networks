@@ -56,8 +56,8 @@ options = trainingOptions(  'sgdm',...
         'Shuffle','every-epoch',...
         'InitialLearnRate',learning_rate,...
         'L2Regularization',0.0005,...
-        'Verbose',true,...
-        'Plots','training-progress');
+        'Verbose',true);
+%         'Plots','training-progress');
 
 net = cell(NF,1);
 training_clock=tic;
@@ -94,8 +94,8 @@ for ii=1:NUMTEST
     time_MILP(ii)=result_bench.time;
 end
 
-time_MILP=mean(time_MILP);
-TC_MILP=mean(TC_MILP);
+meanTime_MILP=mean(time_MILP);
+meanTC_MILP=mean(TC_MILP);
 
 % # of decision variables
 Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
@@ -105,7 +105,7 @@ numerDV_MILP=NF*NE+NF*NL+NF*NA*NE+NE+NF*NE;
 %% pure-CNN
 
 % computation time
-time_pure=testing_time;
+meanTime_pure=testing_time;
 
 % mean TC & feasible ratio
 TC_pure=zeros(NUMTEST,1);
@@ -114,106 +114,166 @@ for ii=1:NUMTEST
     [TC_pure(ii),feasible_pure(ii)]=TCcalculator(imgDataTest(:,:,:,ii),predLabelsTest(ii,:));
 end
 
+meanTC_pure=mean(TC_pure);
+meanFeasible_pure=mean(feasible_pure);
+
 % max TC diff
+TCdiff_pure=TC_pure-TC_MILP;
 
-% accuracy
+% accuracy + precision + recall + F1-score
+[TP_pure,FP_pure,TN_pure,FN_pure]=...
+        ConfusionMatrix(imgLabelsTest,predLabelsTest);
 
-% precision
+[MacroAcc_pure,MacroPre_pure,MacroRec_pure,MacroF1_pure]=...
+    MacroAveraging(TP_pure,FP_pure,TN_pure,FN_pure);
 
-% recall
-
-% F1-score
-testing_accuracy=zeros(6,1);
-opt.NF=NF;
-opt.NT=NUMTEST;
-for jj=1:length(testing_accuracy)
-    opt.mode=jj;
-    testing_accuracy(jj)=ErrorCalc(imgLabelsTest, score, opt);
-end
+[MicroAcc_pure,MicroPre_pure,MicroRec_pure,MicroF1_pure]=...
+    MicroAveraging(TP_pure,FP_pure,TN_pure,FN_pure);
+% testing_accuracy=zeros(6,1);
+% opt.NF=NF;
+% opt.NT=NUMTEST;
+% for jj=1:length(testing_accuracy)
+%     opt.mode=jj;
+%     testing_accuracy(jj)=ErrorCalc(imgLabelsTest, score, opt);
+% end
 
 %% CNN+HCLS
-% value_hill, alloc_hill, accuracy_hill, time_hill
-alloc_HC=cell(NUMTEST,1);
-value_hill=zeros(NUMTEST,1);
+alloc_HCLS=cell(NUMTEST,1);
+TC_HCLS=zeros(NUMTEST,1);
+feasible_HCLS=TC_HCLS;
 
-climbing_clock=tic;
+% computation time & mean TC & feasible ratio
+clock_HCLS=tic;
 for ii=1:NUMTEST
-    [buff_HC,value_hill(ii)]=HillClimbing(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
-    alloc_HC{ii}=buff_HC';
+    [buff_HCLS,TC_HCLS(ii),feasible_HCLS(ii)]=...
+        HillClimbing(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),Net);
+    alloc_HCLS{ii}=buff_HCLS';
 end
-climbing_time=toc(climbing_clock);
-climbing_time=climbing_time/NUMTEST;
-disp('CNN+Hill Climbing finished');
+time_HCLS=toc(clock_HCLS);
 
-alloc_hill=[alloc_HC{1:NUMTEST}]';
+meanTime_HCLS=time_HCLS/NUMTEST+testing_time;
+meanTC_HCLS=mean(TC_HCLS);
+meanFeasible_HCLS=mean(feasible_HCLS);
 
-counter=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    counter(ii)=sum(alloc_hill(ii,:)==categorical(imgLabelsTest(ii,:)));
-end
-counter_NF=zeros(NF,1);
-for ii=1:(NF+1)
-    counter_NF(ii)=sum(counter==ii-1);
-end
+% max TC diff
+TCdiff_HCLS=TC_HCLS-TC_MILP;
 
-accuracy_hill=(0:NF)*counter_NF/(NF*NUMTEST);
-time_hill=testing_time+climbing_time;
+% accuracy + precision + recall + F1-score
+predLabels_HCLS=[alloc_HCLS{1:NUMTEST}]';
+
+[TP_HCLS,FP_HCLS,TN_HCLS,FN_HCLS]=...
+        ConfusionMatrix(imgLabelsTest,predLabels_HCLS);
+
+[MacroAcc_HCLS,MacroPre_HCLS,MacroRec_HCLS,MacroF1_HCLS]=...
+    MacroAveraging(TP_HCLS,FP_HCLS,TN_HCLS,FN_HCLS);
+
+[MicroAcc_HCLS,MicroPre_HCLS,MicroRec_HCLS,MicroF1_HCLS]=...
+    MicroAveraging(TP_HCLS,FP_HCLS,TN_HCLS,FN_HCLS);
+
+
+% counter=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     counter(ii)=sum(alloc_hill(ii,:)==categorical(imgLabelsTest(ii,:)));
+% end
+% counter_NF=zeros(NF,1);
+% for ii=1:(NF+1)
+%     counter_NF(ii)=sum(counter==ii-1);
+% end
+% 
+% accuracy_hill=(0:NF)*counter_NF/(NF*NUMTEST);
+% time_hill=testing_time+climbing_time;
 
 %% CNN-MILP 
-% value_sub, alloc_sub, accuracy_sub, time_sub
-result_sM=cell(NUMTEST,1);
-alloc_sM=cell(NUMTEST,1);
-value_sub=zeros(NUMTEST,1);
 
-subM_clock=tic;
+result_CNNMILP=cell(NUMTEST,1);
+alloc_CNNMILP=cell(NUMTEST,1);
+TC_CNNMILP=zeros(NUMTEST,1);
+numberDV_CNNMILP=zeros(NUMTEST,1);
+time_CNNMILP=zeros(NUMTEST,1);
+
+% computation time & mean TC & number of decision variables
 for ii=1:NUMTEST
-    result_sM{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:));
-    alloc_sM{ii}=result_sM{ii}.allocations;
-    value_sub(ii)=result_sM{ii}.fval;
-end
-subM_time=toc(subM_clock);
-subM_time=subM_time/NUMTEST;
-disp('CNN+sub MILP finished');
-
-alloc_sub=[alloc_sM{1:NUMTEST}]';
-
-counter=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    counter(ii)=sum(alloc_sub(ii,:)==categorical(imgLabelsTest(ii,:)));
-end
-counter_NF=zeros(NF,1);
-for ii=1:(NF+1)
-    counter_NF(ii)=sum(counter==ii-1);
+    result_CNNMILP{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),Net);
+    alloc_CNNMILP{ii}=result_CNNMILP{ii}.allocations;
+    TC_CNNMILP(ii)=result_CNNMILP{ii}.fval;
+    numberDV_CNNMILP(ii)=numerDV_MILP-result_CNNMILP{ii}.num_var;
+    time_CNNMILP(ii)=result_CNNMILP{ii}.time;
 end
 
-accuracy_sub=(0:NF)*counter_NF/(NF*NUMTEST);
-time_sub=testing_time+subM_time;
+meanTime_CNNMILP=mean(time_CNNMILP)+testing_time;
+meanTC_CNNMILP=mean(TC_CNNMILP);
+meanNumberDV_CNNMILP=mean(numberDV_CNNMILP);
+
+% max TC diff
+TCdiff_CNNMILP=TC_CNNMILP-TC_MILP;
+
+% accuracy + precision + recall + F1-score
+predLabels_CNNMILP=[alloc_CNNMILP{1:NUMTEST}]';
+
+[TP_CNNMILP,FP_CNNMILP,TN_CNNMILP,FN_CNNMILP]=...
+        ConfusionMatrix(imgLabelsTest,predLabels_CNNMILP);
+
+[MacroAcc_CNNMILP,MacroPre_CNNMILP,MacroRec_CNNMILP,MacroF1_CNNMILP]=...
+    MacroAveraging(TP_CNNMILP,FP_CNNMILP,TN_CNNMILP,FN_CNNMILP);
+
+[MicroAcc_CNNMILP,MicroPre_CNNMILP,MicroRec_CNNMILP,MicroF1_CNNMILP]=...
+    MicroAveraging(TP_CNNMILP,FP_CNNMILP,TN_CNNMILP,FN_CNNMILP);
+
+% counter=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     counter(ii)=sum(alloc_sub(ii,:)==categorical(imgLabelsTest(ii,:)));
+% end
+% counter_NF=zeros(NF,1);
+% for ii=1:(NF+1)
+%     counter_NF(ii)=sum(counter==ii-1);
+% end
+% 
+% accuracy_sub=(0:NF)*counter_NF/(NF*NUMTEST);
+% time_sub=testing_time+subM_time;
 
 %% Greedy Algorithm
-% value_greedy, alloc_greedy, accuracy_greedy, time_greedy
-result_G=cell(NUMTEST,1);
-alloc_G=cell(NUMTEST,1);
-value_greedy=zeros(NUMTEST,1);
 
-G_clock=tic;
+% computation time & mean TC & feasible ratio
+result_Greedy=cell(NUMTEST,1);
+alloc_Greedy=cell(NUMTEST,1);
+TC_Greedy=zeros(NUMTEST,1);
+feasible_Greedy=zeros(NUMTEST,1);
+
+clock_Greedy=tic;
 for ii=1:NUMTEST
-    result_G{ii}=Greedy(imgDataTest(:,:,:,ii));
-    alloc_G{ii}=result_G{ii}.allocations;
-    value_greedy(ii)=result_G{ii}.value;
+    result_Greedy{ii}=Greedy(imgDataTest(:,:,:,ii),Net);
+    alloc_Greedy{ii}=result_Greedy{ii}.allocations;
+    TC_Greedy(ii)=result_Greedy{ii}.value;
+    feasible_Greedy(ii)=result_Greedy{ii}.ratio;
 end
-G_time=toc(G_clock);
-time_greedy=G_time/NUMTEST;
-disp('Greedy finished');
+time_Greedy=toc(clock_Greedy);
 
-alloc_greedy=[alloc_G{1:NUMTEST}]';
+meanTime_Greedy=time_Greedy/NUMTEST;
+meanTC_Greedy=mean(TC_Greedy);
+meanFeasible_Greedy=mean(feasible_Greedy);
 
-counter=zeros(NUMTEST,1);
-for ii=1:NUMTEST
-    counter(ii)=sum(alloc_greedy(ii,:)==categorical(imgLabelsTest(ii,:)));
-end
-counter_NF=zeros(NF,1);
-for ii=1:(NF+1)
-    counter_NF(ii)=sum(counter==ii-1);
-end
+% max TC diff
+TCdiff_Greedy=TC_Greedy-TC_MILP;
 
-accuracy_greedy=(0:NF)*counter_NF/(NF*NUMTEST);
+% accuracy + precision + recall + F1-score
+predLabels_Greedy=[alloc_Greedy{1:NUMTEST}]';
+
+[TP_Greedy,FP_Greedy,TN_Greedy,FN_Greedy]=...
+        ConfusionMatrix(imgLabelsTest,predLabels_Greedy);
+
+[MacroAcc_Greedy,MacroPre_Greedy,MacroRec_Greedy,MacroF1_Greedy]=...
+    MacroAveraging(TP_Greedy,FP_Greedy,TN_Greedy,FN_Greedy);
+
+[MicroAcc_Greedy,MicroPre_Greedy,MicroRec_Greedy,MicroF1_Greedy]=...
+    MicroAveraging(TP_Greedy,FP_Greedy,TN_Greedy,FN_Greedy);
+
+% counter=zeros(NUMTEST,1);
+% for ii=1:NUMTEST
+%     counter(ii)=sum(alloc_greedy(ii,:)==categorical(imgLabelsTest(ii,:)));
+% end
+% counter_NF=zeros(NF,1);
+% for ii=1:(NF+1)
+%     counter_NF(ii)=sum(counter==ii-1);
+% end
+% 
+% accuracy_greedy=(0:NF)*counter_NF/(NF*NUMTEST);

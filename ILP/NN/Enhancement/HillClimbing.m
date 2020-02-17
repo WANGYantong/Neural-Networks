@@ -1,11 +1,11 @@
-function [final_state,final_score] = HillClimbing(img,init_state,score)
+function [final_state,final_score,final_ratio] = HillClimbing(img,init_state,score,Net)
 
 init_state=double(string(init_state)); % convert from catgorical to int
 
 NF=length(init_state);
 NE=length(score)/NF;
 
-Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
+% Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [prob,sk,bk,SR,BR]=imageDecoding(img);
 Net.prob=prob;
 Net.sk=sk;
@@ -14,7 +14,7 @@ Net.SR=SR;
 Net.BR=BR;
 
 scoreRe=reshape(score,[NE,NF])';
-scoreRe(scoreRe<1e-4)=0;
+scoreRe(scoreRe<1e-3)=0;
 
 [opt.NL,opt.NA,opt.NE]=size(Net.B);
 opt.mode=0;
@@ -26,11 +26,12 @@ for ii=1:opt.NL
 end
 opt.B_fold=B_fold;
 
-init_score=valueCalculator(Net,init_state,opt);
+[init_score,init_ratio]=valueCalculator(Net,init_state,opt);
     
 succ_state=cell(NF,1);
 succ_index=2*ones(NF,1);
 succ_score=zeros(NF,1);
+succ_ratio=zeros(NF,1);
 
 while(1)
  
@@ -38,10 +39,12 @@ while(1)
         [succ_state{ii},update]=FindSucc(init_state,scoreRe(ii,:),succ_index(ii),ii);
         
         if update==1
-            succ_score(ii)=valueCalculator(Net,succ_state{ii},opt);                  
+            [succ_score(ii),succ_ratio(ii)]=valueCalculator(Net,succ_state{ii},opt);                  
         else
             succ_score(ii)=init_score;
+            succ_ratio(ii)=init_ratio;
         end
+        
     end
     
     if init_score<min(succ_score)
@@ -49,6 +52,7 @@ while(1)
     else
         [init_score,index]=min(succ_score);
         init_state=succ_state{index};
+        init_ratio=succ_ratio(index);
         succ_index(index)=succ_index(index)+1;
     end
 
@@ -56,6 +60,7 @@ end
 
 final_state=categorical(init_state);
 final_score=init_score;
+final_ratio=init_ratio;
 
 end
 
