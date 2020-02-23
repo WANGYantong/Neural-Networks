@@ -63,7 +63,7 @@ for index=1:NUMINDEX
     % available bandwidth in link
 %     bandwidthR=randi([0,2],size(G.Edges.Weight))*10+80;
 %     bandwidthR=randi([1,6],size(G.Edges.Weight))*10+40;
-    bandwidthR=ones(size(G.Edges.Weight))*100;
+    bandwidthR=ones(size(G.Edges.Weight))*101;
 
 
     % packing parameters

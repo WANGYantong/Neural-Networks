@@ -1,11 +1,11 @@
-function updateImage = imgUpdate(origImage,preallocation,layout)
+function updateImage = imgUpdate(origImage,preallocation,layout,Net)
 
 NF=length(layout.image_layout.space.x);
 NE=length(layout.image_layout.space.y);
 NL=length(layout.image_layout.bandwidth.y);
 NA=length(layout.image_layout.prob.y);
 
-Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
+% Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 NIMG=size(origImage,4); % number of images
 assignment=[preallocation{1:NF}];
 

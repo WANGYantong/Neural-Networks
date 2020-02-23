@@ -2,6 +2,22 @@
 clear
 clc
 
+MONTECARLO=100;
+
+meanTime_Monte=cell(MONTECARLO,1);
+meanTC_Monte=meanTime_Monte;
+meanFeasible_Monte=meanTime_Monte;
+maxDiff_Monte=meanTime_Monte;
+numDV_Monte=meanTime_Monte;
+macroAcc_Monte=meanTime_Monte;
+macroPre_Monte=meanTime_Monte;
+macroRec_Monte=meanTime_Monte;
+macroF1_Monte=meanTime_Monte;
+microAcc_Monte=meanTime_Monte;
+microPre_Monte=meanTime_Monte;
+microRec_Monte=meanTime_Monte;
+microF1_Monte=meanTime_Monte;
+
 addpath(genpath(pwd));
 
 %% load dataset
@@ -33,6 +49,7 @@ imgDataTrain=img.imgData(:,:,:,training_range);
 inputSize=size(imgDataTrain);
 imgLabelsTrain=categorical(lab.imgLabels(training_range,:));
 
+for index_monte=1:MONTECARLO
 %% training CNN
 layers=[
     imageInputLayer(inputSize(1:3))
@@ -56,7 +73,7 @@ options = trainingOptions(  'sgdm',...
         'Shuffle','every-epoch',...
         'InitialLearnRate',learning_rate,...
         'L2Regularization',0.0005,...
-        'Verbose',true);
+        'Verbose',false);
 %         'Plots','training-progress');
 
 net = cell(NF,1);
@@ -67,6 +84,7 @@ end
 training_time=toc(training_clock);
 training_time=training_time/NF;
 
+save(['Net\net',num2str(index_monte),'.mat'],'net');
 %% testing CNN
 predLabelsTestMedium=cell(NF,1);
 score=cell(NF,1);
@@ -101,7 +119,7 @@ meanTC_MILP=mean(TC_MILP);
 Net=load(['../DataStore/flow',num2str(NF),'/network.mat']);
 [NL,NA,NE]=size(Net.B);
 
-numerDV_MILP=NF*NE+NF*NL+NF*NA*NE+NE+NF*NE;
+numberDV_MILP=NF*NE+NF*NL+NF*NA*NE+NE+NF*NE;
 %% pure-CNN
 
 % computation time
@@ -196,7 +214,7 @@ for ii=1:NUMTEST
     result_CNNMILP{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),Net);
     alloc_CNNMILP{ii}=result_CNNMILP{ii}.allocations;
     TC_CNNMILP(ii)=result_CNNMILP{ii}.fval;
-    numberDV_CNNMILP(ii)=numerDV_MILP-result_CNNMILP{ii}.num_var;
+    numberDV_CNNMILP(ii)=numberDV_MILP-result_CNNMILP{ii}.num_var;
     time_CNNMILP(ii)=result_CNNMILP{ii}.time;
 end
 
@@ -277,3 +295,49 @@ predLabels_Greedy=[alloc_Greedy{1:NUMTEST}]';
 % end
 % 
 % accuracy_greedy=(0:NF)*counter_NF/(NF*NUMTEST);
+meanTime_Monte{index_monte}=[meanTime_MILP,meanTime_pure,meanTime_CNNMILP,meanTime_HCLS,meanTime_Greedy];
+meanTC_Monte{index_monte}=[meanTC_MILP,meanTC_pure,meanTC_CNNMILP,meanTC_HCLS,meanTC_Greedy];
+meanFeasible_Monte{index_monte}=[meanFeasible_pure,meanFeasible_HCLS,meanFeasible_Greedy];
+maxDiff_Monte{index_monte}=[max(TCdiff_pure),max(TCdiff_CNNMILP),max(TCdiff_HCLS),max(TCdiff_Greedy)];
+numDV_Monte{index_monte}=[numberDV_MILP,meanNumberDV_CNNMILP];
+macroAcc_Monte{index_monte}=[MacroAcc_pure,MacroAcc_CNNMILP,MacroAcc_HCLS,MacroAcc_Greedy];
+macroPre_Monte{index_monte}=[MacroPre_pure,MacroPre_CNNMILP,MacroPre_HCLS,MacroPre_Greedy];
+macroRec_Monte{index_monte}=[MacroRec_pure,MacroRec_CNNMILP,MacroRec_HCLS,MacroRec_Greedy];
+macroF1_Monte{index_monte}=[MacroF1_pure,MacroF1_CNNMILP,MacroF1_HCLS,MacroF1_Greedy];
+microAcc_Monte{index_monte}=[MicroAcc_pure,MicroAcc_CNNMILP,MicroAcc_HCLS,MicroAcc_Greedy];
+microPre_Monte{index_monte}=[MicroPre_pure,MicroPre_CNNMILP,MicroPre_HCLS,MicroPre_Greedy];
+microRec_Monte{index_monte}=[MicroRec_pure,MicroRec_CNNMILP,MicroRec_HCLS,MicroRec_Greedy];
+microF1_Monte{index_monte}=[MicroF1_pure,MicroF1_CNNMILP,MicroF1_HCLS,MicroF1_Greedy];
+
+fprintf('\n number %d simulation \n',index_monte);
+
+end
+
+disp('time');
+disp(mean(cell2mat(meanTime_Monte)));
+disp('TC');
+disp(mean(cell2mat(meanTC_Monte)));
+disp('ratio');
+disp(mean(cell2mat(meanFeasible_Monte)));
+disp('diff');
+disp(mean(cell2mat(maxDiff_Monte)));
+disp('d.v.');
+disp(mean(cell2mat(numDV_Monte)));
+disp('macro acc');
+disp(mean(cell2mat(macroAcc_Monte)));
+disp('macro pre');
+disp(mean(cell2mat(macroPre_Monte)));
+disp('macro rec');
+disp(mean(cell2mat(macroRec_Monte)));
+disp('macro f1');
+disp(mean(cell2mat(macroF1_Monte)));
+disp('micro acc');
+disp(mean(cell2mat(microAcc_Monte)));
+disp('micro pre');
+disp(mean(cell2mat(microPre_Monte)));
+disp('micro rec');
+disp(mean(cell2mat(microRec_Monte)));
+disp('micro f1');
+disp(mean(cell2mat(microF1_Monte)));
+
+save('plot_data\5flow.mat');
