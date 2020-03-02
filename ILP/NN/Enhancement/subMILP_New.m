@@ -1,4 +1,4 @@
-function [final_state,TC_CNNMILP,saveDV_CNNMILP] = subMILP_New(img,init_state,score,Net)
+function [final_state,TC_CNNMILP,saveDV_CNNMILP,whistle] = subMILP_New(img,init_state,score,Net,whistle)
 
 NUMTEST=size(score,1);
 
@@ -11,6 +11,10 @@ saveDV_CNNMILP=zeros(NUMTEST,1);
 % computation time & mean TC & number of decision variables
 for ii=1:NUMTEST
     result_CNNMILP{ii}=subMILP(img(:,:,:,ii), init_state(ii,:), score(ii,:),Net);
+     if isempty(result_CNNMILP{ii}.fval)
+        result_CNNMILP{ii}=subMILP(img(:,:,:,ii), init_state(ii,:), score(ii,:)+1,Net);
+        whistle=whistle+1;
+    end
     alloc_CNNMILP{ii}=result_CNNMILP{ii}.allocations;
     TC_CNNMILP(ii)=result_CNNMILP{ii}.fval;
     saveDV_CNNMILP(ii)=result_CNNMILP{ii}.num_var;

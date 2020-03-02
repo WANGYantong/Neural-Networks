@@ -14,7 +14,7 @@ Net.SR=SR;
 Net.BR=BR;
 
 scoreRe=reshape(score,[NE,NF])';
-scoreRe(scoreRe<1e-3)=0;
+scoreRe(scoreRe<1e-4)=0;
 
 [opt.NL,opt.NA,opt.NE]=size(Net.B);
 opt.mode=0;
@@ -54,6 +54,9 @@ while(1)
         init_state=succ_state{index};
         init_ratio=succ_ratio(index);
         succ_index(index)=succ_index(index)+1;
+        if succ_index(index)>(NE+2)
+            break;
+        end
     end
 
 end

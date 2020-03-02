@@ -26,7 +26,7 @@ for ii=1:NIMG
         if isundefined(assignment(ii,jj))
             assignment(ii,jj)=categorical(randi([1,NE]));
         end
-        x(jj,assignment(ii,jj))=1;
+        x(jj,double(string(assignment(ii,jj))))=1;
     end
     % prepare y for bandwidth update
     z=zeros(DONE,NA,NE);
@@ -44,11 +44,13 @@ for ii=1:NIMG
     % update space
     usedSpace=sum(Net.sk(1:DONE,:).*x,1);
     updatedSpace=Net.sk(DONE+1:end,:)./(1-usedSpace);
+    updatedSpace(updatedSpace<0)=10;
     updateImage(layout.image_layout.space.x(DONE+1:end),...
         layout.image_layout.space.y,:,ii)=updatedSpace;
     % update link
     usedBandwidth=sum(Net.bk(1:DONE,:).*y,1);
     updatedBandwidth=Net.bk(DONE+1:end,:)./(1-usedBandwidth);
+    updatedBandwidth(updatedBandwidth<0)=10;
     updateImage(layout.image_layout.bandwidth.x(DONE+1:end),...
         layout.image_layout.bandwidth.y,:,ii)=updatedBandwidth;
 end

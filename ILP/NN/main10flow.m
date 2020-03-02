@@ -2,7 +2,7 @@
 clear
 clc
 
-MONTECARLO=1;
+MONTECARLO=2;
 
 meanTime_Monte=cell(MONTECARLO,1);
 meanTC_Monte=meanTime_Monte;
@@ -18,10 +18,12 @@ microPre_Monte=meanTime_Monte;
 microRec_Monte=meanTime_Monte;
 microF1_Monte=meanTime_Monte;
 
+whistle_blower=zeros(MONTECARLO,1);
+
 addpath(genpath(pwd));
 
 %% load dataset
-flow=1:10;
+flow=1:15;
 NF=length(flow);
 
 layout=load(['../DataStore/flow',num2str(NF),'/layout.mat']);
@@ -181,10 +183,15 @@ time_CNNMILP=zeros(NUMTEST,1);
 % computation time & mean TC & number of decision variables
 for ii=1:NUMTEST
     result_CNNMILP{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:),Net);
+    time_CNNMILP(ii)=result_CNNMILP{ii}.time;
+    if isempty(result_CNNMILP{ii}.fval)
+        result_CNNMILP{ii}=subMILP(imgDataTest(:,:,:,ii), predLabelsTest(ii,:), scoreTest(ii,:)+1,Net);
+        time_CNNMILP(ii)=time_CNNMILP(ii)+result_CNNMILP{ii}.time;
+        whistle_blower(index_monte)=whistle_blower(index_monte)+1;
+    end
     alloc_CNNMILP{ii}=result_CNNMILP{ii}.allocations;
     TC_CNNMILP(ii)=result_CNNMILP{ii}.fval;
     numberDV_CNNMILP(ii)=numberDV_MILP-result_CNNMILP{ii}.num_var;
-    time_CNNMILP(ii)=result_CNNMILP{ii}.time;
 end
 
 meanTime_CNNMILP=mean(time_CNNMILP)+testing_time;
@@ -283,28 +290,46 @@ fprintf('\n number %d simulation \n',index_monte);
 end
 
 disp('time');
-disp(mean(cell2mat(meanTime_Monte)));
+mean_meanTime_Monte=mean(cell2mat(meanTime_Monte));
+disp(mean_meanTime_Monte);
 disp('TC');
-disp(mean(cell2mat(meanTC_Monte)));
+mean_meanTC_Monte=mean(cell2mat(meanTC_Monte));
+disp(mean_meanTC_Monte);
 disp('ratio');
-disp(mean(cell2mat(meanFeasible_Monte)));
+mean_meanFeasible_Monte=mean(cell2mat(meanFeasible_Monte));
+disp(mean_meanFeasible_Monte);
 disp('diff');
-disp(mean(cell2mat(maxDiff_Monte)));
+mean_maxDiff_Monte=mean(cell2mat(maxDiff_Monte));
+disp(mean_maxDiff_Monte);
 disp('d.v.');
-disp(mean(cell2mat(numDV_Monte)));
+mean_numDV_Monte=mean(cell2mat(numDV_Monte));
+disp(mean_numDV_Monte);
 disp('macro acc');
-disp(mean(cell2mat(macroAcc_Monte)));
+mean_macroAcc_Monte=mean(cell2mat(macroAcc_Monte));
+disp(mean_macroAcc_Monte);
 disp('macro pre');
-disp(mean(cell2mat(macroPre_Monte)));
+mean_macroPre_Monte=mean(cell2mat(macroPre_Monte));
+disp(mean_macroPre_Monte);
 disp('macro rec');
-disp(mean(cell2mat(macroRec_Monte)));
+mean_macroRec_Monte=mean(cell2mat(macroRec_Monte));
+disp(mean_macroRec_Monte);
 disp('macro f1');
-disp(mean(cell2mat(macroF1_Monte)));
+mean_macroF1_Monte=mean(cell2mat(macroF1_Monte));
+disp(mean_macroF1_Monte);
 disp('micro acc');
-disp(mean(cell2mat(microAcc_Monte)));
+mean_microAcc_Monte=mean(cell2mat(microAcc_Monte));
+disp(mean_microAcc_Monte);
 disp('micro pre');
-disp(mean(cell2mat(microPre_Monte)));
+mean_microPre_Monte=mean(cell2mat(microPre_Monte));
+disp(mean_microPre_Monte);
 disp('micro rec');
-disp(mean(cell2mat(microRec_Monte)));
+mean_microRec_Monte=mean(cell2mat(microRec_Monte));
+disp(mean_microRec_Monte);
 disp('micro f1');
-disp(mean(cell2mat(microF1_Monte)));
+mean_microF1_Monte=mean(cell2mat(microF1_Monte));
+disp(mean_microF1_Monte);
+disp('infeasible case in CNNMILP');
+sum_whistle_blower=sum(whistle_blower);
+disp(whistle_blower');
+
+save(['plot_data\',num2str(NF),'flowWhole.mat']);

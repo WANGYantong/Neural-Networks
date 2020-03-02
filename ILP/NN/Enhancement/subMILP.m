@@ -5,7 +5,7 @@ function result = subMILP(img,labelOriginal,score,Net)
 NF=length(labelOriginal);
 NE=length(score)/NF;
 scoreRe=reshape(score,[NE,NF])';
-scoreRe(scoreRe>=1e-3)=1;
+scoreRe(scoreRe>=1e-4)=1;
 scoreRe=round(scoreRe);
 
 %% unzip data for MILP
